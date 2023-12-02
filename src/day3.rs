@@ -14,9 +14,14 @@ fn do_stuff(file_name: &str) -> i32 {
     return input.len() as i32;
 }
 
-#[test]
-fn do_stuff_works() {
-    let file_length = do_stuff("test.txt");
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    assert_eq!(13, file_length);
+    #[test]
+    fn do_stuff_works() {
+        let file_length = do_stuff("test.txt");
+
+        assert_eq!(13, file_length);
+    }
 }
