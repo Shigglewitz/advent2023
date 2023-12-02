@@ -15,7 +15,6 @@ pub fn part2(file_name: &str) -> i32 {
     let input = utils::read_file("day1", file_name);
     let total: i32 = input
         .lines()
-        .map(|line| line.to_string())
         .map(translate_to_numeric)
         .map(calibration_value)
         .sum();
@@ -47,7 +46,7 @@ fn strip_alpha(mut input: String) -> String {
     return input;
 }
 
-fn translate_to_numeric(input: String) -> String {
+fn translate_to_numeric(input: &str) -> String {
     return input
         .replace("one", "o1e")
         .replace("two", "t2o")
@@ -91,44 +90,27 @@ mod tests {
     #[case("nineight", 98)]
     #[case("stbqnrhdqnjcvjgthtmht8xndfgprq3eightwol", 82)]
     fn translate_and_calibration_tests(#[case] input: &str, #[case] expected: i32) {
-        let translated = translate_to_numeric(input.to_string());
+        let translated = translate_to_numeric(input);
         let actual = calibration_value(translated);
 
         assert_eq!(expected, actual)
     }
 
-    #[test]
-    fn to_two_digit_num_one_digit() {
-        let input = "7".to_string();
+    #[rstest]
+    #[case("7", 77)]
+    #[case("56", 56)]
+    #[case("123", 13)]
+    fn to_two_digit_num_tests(#[case] input: &str, #[case] expected: i32) {
+        let actual = to_two_digit_num(input.to_string());
 
-        let actual = to_two_digit_num(input);
-
-        assert_eq!(77, actual)
-    }
-
-    #[test]
-    fn to_two_digit_num_two_digits() {
-        let input = "56".to_string();
-
-        let actual = to_two_digit_num(input);
-
-        assert_eq!(56, actual)
-    }
-
-    #[test]
-    fn to_two_digit_num_three_digits() {
-        let input = "123".to_string();
-
-        let actual = to_two_digit_num(input);
-
-        assert_eq!(13, actual)
+        assert_eq!(expected, actual);
     }
 
     #[test]
     fn strip_alpha_works() {
-        let input: String = "1abc2".to_string();
+        let input = "1abc2";
 
-        let actual = strip_alpha(input);
+        let actual = strip_alpha(input.to_string());
 
         assert_eq!("12", actual)
     }

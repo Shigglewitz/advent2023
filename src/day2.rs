@@ -8,6 +8,12 @@ pub fn part2(file_name: &str) -> i32 {
     return sum_game_powers(file_name);
 }
 
+const EXAMPLE_OBSERVATION: Observation = Observation {
+    red: 12,
+    green: 13,
+    blue: 14,
+};
+
 struct Observation {
     red: i32,
     green: i32,
@@ -21,12 +27,7 @@ struct Game {
 
 fn sum_game_powers(file_name: &str) -> i32 {
     let input = utils::read_file("day2", file_name);
-    return input
-        .lines()
-        .map(|line| line.to_string())
-        .map(parse_game)
-        .map(find_game_power)
-        .sum();
+    return input.lines().map(parse_game).map(find_game_power).sum();
 }
 
 fn find_game_power(game: Game) -> i32 {
@@ -34,7 +35,7 @@ fn find_game_power(game: Game) -> i32 {
     let mut max_green = 0;
     let mut max_blue = 0;
 
-    for obs in &game.observations {
+    for obs in game.observations {
         if obs.red > max_red {
             max_red = obs.red;
         }
@@ -51,35 +52,28 @@ fn find_game_power(game: Game) -> i32 {
 
 fn sum_possible_games(file_name: &str) -> i32 {
     let input = utils::read_file("day2", file_name);
-    let example = Observation {
-        red: 12,
-        green: 13,
-        blue: 14,
-    };
     return input
         .lines()
-        .map(|line| line.to_string())
         .map(parse_game)
-        .filter(|game| is_possible(game, &example))
+        .filter(is_possible)
         .map(|game| game.id)
         .sum();
 }
 
-fn is_possible(round: &Game, example: &Observation) -> bool {
-    let mut possible = true;
-    round.observations.iter().for_each(|obs| {
-        if obs.red > example.red {
-            possible = false;
-        } else if obs.green > example.green {
-            possible = false;
-        } else if obs.blue > example.blue {
-            possible = false;
+fn is_possible(round: &Game) -> bool {
+    for obs in &round.observations {
+        if obs.red > EXAMPLE_OBSERVATION.red {
+            return false;
+        } else if obs.green > EXAMPLE_OBSERVATION.green {
+            return false;
+        } else if obs.blue > EXAMPLE_OBSERVATION.blue {
+            return false;
         }
-    });
-    return possible;
+    }
+    return true;
 }
 
-fn parse_game(input: String) -> Game {
+fn parse_game(input: &str) -> Game {
     let mut colon_split = input.split(":");
     let id = colon_split
         .next()
@@ -93,7 +87,7 @@ fn parse_game(input: String) -> Game {
         .next()
         .unwrap()
         .split(";")
-        .map(|obs| parse_observation(obs.to_string()))
+        .map(parse_observation)
         .collect();
     return Game {
         id: id,
@@ -101,7 +95,7 @@ fn parse_game(input: String) -> Game {
     };
 }
 
-fn parse_observation(input: String) -> Observation {
+fn parse_observation(input: &str) -> Observation {
     let mut red = 0;
     let mut green = 0;
     let mut blue = 0;
@@ -157,7 +151,7 @@ mod tests {
     )]
     #[case("Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green", 36)]
     fn find_game_power_works(#[case] input: &str, #[case] expected: i32) {
-        let game = parse_game(input.to_string());
+        let game = parse_game(input);
 
         let actual = find_game_power(game);
 
@@ -172,21 +166,16 @@ mod tests {
     #[case("Game 1: 14 green", false)]
     #[case("Game 1: 15 blue", false)]
     fn is_possible_tests(#[case] input: &str, #[case] possible: bool) {
-        let standard = Observation {
-            red: 12,
-            green: 13,
-            blue: 14,
-        };
-        let game = parse_game(input.to_string());
+        let game = parse_game(input);
 
-        let actual = is_possible(&game, &standard);
+        let actual = is_possible(&game);
 
         assert_eq!(actual, possible);
     }
 
     #[test]
     fn parse_game_sparse() {
-        let input = "Game 1: 1 red, 2 green, 3 blue".to_string();
+        let input = "Game 1: 1 red, 2 green, 3 blue";
 
         let actual = parse_game(input);
 
@@ -200,7 +189,7 @@ mod tests {
 
     #[test]
     fn parse_game_full() {
-        let input = "Game 2: 3 red; 1 red, 2 blue; 4 red, 2 blue, 45 green".to_string();
+        let input = "Game 2: 3 red; 1 red, 2 blue; 4 red, 2 blue, 45 green";
 
         let actual = parse_game(input);
 
@@ -222,7 +211,7 @@ mod tests {
 
     #[test]
     fn parse_observation_works_sparse() {
-        let input = "3 red".to_string();
+        let input = "3 red";
 
         let actual = parse_observation(input);
 
@@ -233,7 +222,7 @@ mod tests {
 
     #[test]
     fn parse_observation_works_full() {
-        let input = "3 red, 2 blue, 1 green".to_string();
+        let input = "3 red, 2 blue, 1 green";
 
         let actual = parse_observation(input);
 
