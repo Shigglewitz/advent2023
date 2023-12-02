@@ -6,16 +6,21 @@ mod utils;
 fn main() {
     println!("Hello, world!");
 
-    println!("day1, part 1 is {}", day1::part1("real.txt").to_string());
-    println!("day1, part 2 is {}", day1::part2("real.txt").to_string());
-
-    println!("day2 part 1 is {}", day2::part1("real.txt").to_string());
-    println!("day2 part 2 is {}", day2::part2("real.txt").to_string());
-
-    println!("******** PLACE HOLDER ********");
-
-    println!("day3 part 1 is {}", day3::part1("test.txt").to_string());
-    println!("day3 part 2 is {}", day3::part2("test.txt").to_string());
+    println!("┌────────┐");
+    print_day("01", day1::part1("real.txt"), day1::part2("real.txt"));
+    println!("├────────┤");
+    print_day("02", day2::part1("real.txt"), day2::part2("real.txt"));
+    println!("├────────┤");
+    print_day("03", day3::part1("test.txt"), day3::part2("test.txt"));
+    println!("└────────┘");
 
     println!("Farewell, world!");
+}
+
+// get more weird ascii art chars from here https://theasciicode.com.ar/extended-ascii-code/box-drawings-single-vertical-line-character-ascii-code-179.html
+fn print_day(day_id: &str, part1: i32, part2: i32) {
+    println!("│ Day {} │", day_id);
+    println!("├────────┤");
+    println!("│ Part 1 │ {}", part1.to_string());
+    println!("│ Part 2 │ {}", part2.to_string());
 }
