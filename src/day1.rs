@@ -1,35 +1,41 @@
-use lazy_static::lazy_static;
-use regex::Regex;
 use rstest::rstest;
 use std::fs::File;
 use std::io::BufReader;
 use std::io::Read;
-use std::collections::HashMap;
 
+pub fn part1(file_name: &str) -> i32 {
+    let input = read_file(file_name.to_string());
+    let total: i32 = input
+        .lines()
+        .map(|line| line.to_string())
+        .map(calibration_value)
+        .sum();
 
-lazy_static! {
-    static ref NUM_REGEX: Regex = Regex::new(r"one|two|three|four|five|six|seven|eight|nine").unwrap();
-    static ref TRANSLATE_MAP: HashMap<&'static str, &'static str> = generate_translate_map();
+    return total;
 }
 
-pub fn solve(file_name: &str) -> i32 {
+pub fn part2(file_name: &str) -> i32 {
     let input = read_file(file_name.to_string());
-    let total: i32 = input.lines()
-        .map(|line| calibration_value(line)).sum();
+    let total: i32 = input
+        .lines()
+        .map(|line| line.to_string())
+        .map(translate_to_numeric)
+        .map(calibration_value)
+        .sum();
 
     return total;
 }
 
 #[test]
-fn solve_basic() {
-    let actual: i32 = solve("test_1.txt");
+fn part1_works() {
+    let actual: i32 = part1("test_1.txt");
 
     assert_eq!(142, actual);
 }
 
 #[test]
-fn solve_advanced() {
-    let actual: i32 = solve("test_2.txt");
+fn part2_works() {
+    let actual: i32 = part2("test_2.txt");
 
     assert_eq!(281, actual);
 }
@@ -49,16 +55,17 @@ fn read_file_works() {
     let expected: String = "1abc2
 pqr3stu8vwx
 a1b2c3d4e5f
-treb7uchet".lines().collect();
+treb7uchet"
+        .lines()
+        .collect();
 
     let actual: String = read_file("test_1.txt".to_string()).lines().collect();
 
     assert_eq!(expected, actual);
 }
 
-fn calibration_value(input: &str) -> i32 {
-    let translated = translate_to_numeric(input.to_string());
-    let no_art = strip_alpha(translated);
+fn calibration_value(input: String) -> i32 {
+    let no_art = strip_alpha(input);
     let calibration = to_two_digit_num(no_art);
     return calibration;
 }
@@ -72,13 +79,23 @@ fn calibration_value(input: &str) -> i32 {
 #[case("4nineeightseven2", 42)]
 #[case("zoneight234", 14)]
 #[case("7pqrstsixteen", 76)]
-fn parameterized(#[case] input: &str, #[case] expected: i32) {
-    assert_eq!(expected, calibration_value(input))
+#[case("nineight", 98)]
+#[case("stbqnrhdqnjcvjgthtmht8xndfgprq3eightwol", 82)]
+fn translate_and_calibration_tests(#[case] input: &str, #[case] expected: i32) {
+    let translated = translate_to_numeric(input.to_string());
+    let actual = calibration_value(translated);
+
+    assert_eq!(expected, actual)
 }
 
 fn to_two_digit_num(input: String) -> i32 {
     let first: i32 = input.chars().nth(0).unwrap().to_digit(10).unwrap() as i32;
-    let second: i32 = input.chars().nth(input.len() - 1).unwrap().to_digit(10).unwrap() as i32;
+    let second: i32 = input
+        .chars()
+        .nth(input.len() - 1)
+        .unwrap()
+        .to_digit(10)
+        .unwrap() as i32;
 
     return first * 10 + second;
 }
@@ -119,71 +136,21 @@ fn strip_alpha(mut input: String) -> String {
 #[test]
 fn strip_alpha_works() {
     let input: String = "1abc2".to_string();
-    
+
     let actual = strip_alpha(input);
 
     assert_eq!("12", actual)
 }
 
-fn generate_translate_map() -> HashMap<&'static str,&'static str> {
-    let mut map = HashMap::new();
-    map.insert("one", "1");
-    map.insert("two", "2");
-    map.insert("three", "3");
-    map.insert("four", "4");
-    map.insert("five", "5");
-    map.insert("six", "6");
-    map.insert("seven", "7");
-    map.insert("eight", "8");
-    map.insert("nine", "9");
-
-    return map;
-}
-
-// source: https://stackoverflow.com/questions/56921637/how-do-i-split-a-string-using-a-rust-regex-and-keep-the-delimiters
-fn split_keep<'a>(r: &Regex, text: &'a str) -> Vec<&'a str> {
-    let mut result = Vec::new();
-    let mut last = 0;
-    for matched in r.find_iter(text) {
-        let index = matched.start();
-        if last != index {
-            result.push(&text[last..index]);
-        }
-        result.push(matched.as_str());
-        last = index + matched.as_str().len();
-    }
-    if last < text.len() {
-        result.push(&text[last..]);
-    }
-    result
-}
-
 fn translate_to_numeric(input: String) -> String {
-    return split_keep(&NUM_REGEX, &input)
-        .iter()
-        .map(|word| if TRANSLATE_MAP.contains_key(word) {
-            TRANSLATE_MAP.get(word).unwrap()
-        } else {
-            word
-        })
-        .map(|word| word.to_string())
-        .collect();
-}
-
-#[test]
-fn translate_to_numeric_basic() {
-    let input = "23oneabc";
-
-    let actual = translate_to_numeric(input.to_string());
-
-    assert_eq!("231abc", actual);
-}
-
-#[test]
-fn translate_to_numeric_advanced() {
-    let input = "onetwothreefourfivesixseveneightnine";
-
-    let actual = translate_to_numeric(input.to_string());
-
-    assert_eq!("123456789", actual);
+    return input
+        .replace("one", "o1e")
+        .replace("two", "t2o")
+        .replace("three", "t3e")
+        .replace("four", "f4r")
+        .replace("five", "f5e")
+        .replace("six", "s6x")
+        .replace("seven", "s7n")
+        .replace("eight", "e8t")
+        .replace("nine", "n9e");
 }
