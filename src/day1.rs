@@ -1,10 +1,8 @@
+use crate::utils;
 use rstest::rstest;
-use std::fs::File;
-use std::io::BufReader;
-use std::io::Read;
 
 pub fn part1(file_name: &str) -> i32 {
-    let input = read_file(file_name.to_string());
+    let input = utils::read_file("day1", file_name);
     let total: i32 = input
         .lines()
         .map(|line| line.to_string())
@@ -15,7 +13,7 @@ pub fn part1(file_name: &str) -> i32 {
 }
 
 pub fn part2(file_name: &str) -> i32 {
-    let input = read_file(file_name.to_string());
+    let input = utils::read_file("day1", file_name);
     let total: i32 = input
         .lines()
         .map(|line| line.to_string())
@@ -38,30 +36,6 @@ fn part2_works() {
     let actual: i32 = part2("test_2.txt");
 
     assert_eq!(281, actual);
-}
-
-fn read_file(file_name: String) -> String {
-    let path = format!("data/day1/{file_name}");
-    let file = File::open(path).unwrap();
-    let mut buf_reader = BufReader::new(file);
-    let mut contents = String::new();
-    buf_reader.read_to_string(&mut contents).unwrap();
-
-    return contents;
-}
-
-#[test]
-fn read_file_works() {
-    let expected: String = "1abc2
-pqr3stu8vwx
-a1b2c3d4e5f
-treb7uchet"
-        .lines()
-        .collect();
-
-    let actual: String = read_file("test_1.txt".to_string()).lines().collect();
-
-    assert_eq!(expected, actual);
 }
 
 fn calibration_value(input: String) -> i32 {

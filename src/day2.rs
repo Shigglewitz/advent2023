@@ -1,14 +1,12 @@
+use crate::utils;
 use rstest::rstest;
-use std::fs::File;
-use std::io::BufReader;
-use std::io::Read;
 
 pub fn part1(file_name: &str) -> i32 {
-    return sum_possible_games(file_name.to_string());
+    return sum_possible_games(file_name);
 }
 
 pub fn part2(file_name: &str) -> i32 {
-    return sum_game_powers(file_name.to_string());
+    return sum_game_powers(file_name);
 }
 
 struct Observation {
@@ -29,8 +27,8 @@ fn part1_works() {
     assert_eq!(8, sum);
 }
 
-fn sum_game_powers(file_name: String) -> i32 {
-    let input = read_file(file_name);
+fn sum_game_powers(file_name: &str) -> i32 {
+    let input = utils::read_file("day2", file_name);
     return input
         .lines()
         .map(|line| line.to_string())
@@ -41,7 +39,7 @@ fn sum_game_powers(file_name: String) -> i32 {
 
 #[test]
 fn sum_game_powers_works() {
-    let actual = sum_game_powers("test.txt".to_string());
+    let actual = sum_game_powers("test.txt");
 
     assert_eq!(2286, actual);
 }
@@ -86,8 +84,8 @@ fn find_game_power_works(#[case] input: &str, #[case] expected: i32) {
     assert_eq!(actual, expected);
 }
 
-fn sum_possible_games(file_name: String) -> i32 {
-    let input = read_file(file_name);
+fn sum_possible_games(file_name: &str) -> i32 {
+    let input = utils::read_file("day2", file_name);
     let example = Observation {
         red: 12,
         green: 13,
@@ -100,16 +98,6 @@ fn sum_possible_games(file_name: String) -> i32 {
         .filter(|game| is_possible(game, &example))
         .map(|game| game.id)
         .sum();
-}
-
-fn read_file(file_name: String) -> String {
-    let path = format!("data/day2/{file_name}");
-    let file = File::open(path).unwrap();
-    let mut buf_reader = BufReader::new(file);
-    let mut contents = String::new();
-    buf_reader.read_to_string(&mut contents).unwrap();
-
-    return contents;
 }
 
 fn is_possible(round: &Game, example: &Observation) -> bool {
