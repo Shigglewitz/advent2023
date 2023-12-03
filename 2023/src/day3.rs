@@ -2,14 +2,6 @@ use crate::utils;
 use std::cmp;
 
 pub fn part1(file_name: &str) -> i32 {
-    return do_stuff(file_name);
-}
-
-pub fn part2(file_name: &str) -> i32 {
-    return do_stuff(file_name);
-}
-
-fn do_stuff(file_name: &str) -> i32 {
     let input = utils::read_file("day3", file_name);
 
     let schematic = get_schematic(input);
@@ -22,9 +14,22 @@ fn do_stuff(file_name: &str) -> i32 {
         .sum();
 }
 
+pub fn part2(file_name: &str) -> i32 {
+    let input = utils::read_file("day3", file_name);
+
+    let schematic = get_schematic(input);
+
+    return schematic
+        .gears
+        .iter()
+        .map(|gear| get_gear_ratio(&schematic, gear))
+        .sum();
+}
+
 struct Schematic {
     lines: Vec<String>,
     parts: Vec<PartNumber>,
+    gears: Vec<Gear>,
 }
 
 struct PartNumber {
@@ -32,6 +37,43 @@ struct PartNumber {
     start_col: i32,
     end_col: i32,
     value: i32,
+}
+
+struct Gear {
+    line_number: usize,
+    col_number: i32,
+}
+
+fn get_gear_ratio(schematic: &Schematic, gear: &Gear) -> i32 {
+    let bordering_parts: Vec<&PartNumber> = schematic
+        .parts
+        .iter()
+        .filter(|part| part_borders_gear(&part, gear))
+        .collect();
+
+    if bordering_parts.len() == 2 {
+        return bordering_parts[0].value * bordering_parts[1].value;
+    }
+    return 0;
+}
+
+fn part_borders_gear(part: &PartNumber, gear: &Gear) -> bool {
+    let top = if part.line_number == 0 {
+        0
+    } else {
+        part.line_number - 1
+    };
+    let bottom = part.line_number + 1;
+    let left = if part.start_col == 0 {
+        0
+    } else {
+        part.start_col - 1
+    };
+    let right = part.end_col;
+    return gear.line_number >= top
+        && gear.line_number <= bottom
+        && gear.col_number >= left
+        && gear.col_number <= right;
 }
 
 fn get_top_border(schematic: &Schematic, part: &PartNumber) -> String {
@@ -105,16 +147,26 @@ fn contains_special_char(input: &str) -> bool {
 fn get_schematic(input: String) -> Schematic {
     let mut lines = Vec::new();
     let mut parts = Vec::new();
+    let mut gears = Vec::new();
 
     for (line_num, line) in input.lines().enumerate() {
         lines.push(line.to_string());
         let this_line_parts: &mut Vec<PartNumber> = &mut get_part_numbers(line_num, line);
         parts.append(this_line_parts);
+        for (col, letter) in line.chars().enumerate() {
+            if letter == '*' {
+                gears.push(Gear {
+                    line_number: line_num,
+                    col_number: col as i32,
+                });
+            }
+        }
     }
 
     return Schematic {
         lines: lines,
         parts: parts,
+        gears: gears,
     };
 }
 
@@ -161,6 +213,72 @@ mod tests {
 
     fn test_schematic() -> Schematic {
         return get_schematic(utils::read_file("day3", "test.txt"));
+    }
+
+    #[test]
+    fn part1_works() {
+        let actual = part1("test.txt");
+
+        assert_eq!(actual, 4361);
+    }
+
+    #[test]
+    fn part2_works() {
+        let actual = part2("test.txt");
+
+        assert_eq!(actual, 467835);
+    }
+
+    #[rstest]
+    #[case(0, 16345)]
+    #[case(1, 0)]
+    #[case(2, 451490)]
+    fn get_gear_ratio_tests(#[case] index: usize, #[case] expected: i32) {
+        let schematic = test_schematic();
+        let gear = &schematic.gears[index];
+
+        let actual = get_gear_ratio(&schematic, &gear);
+
+        assert_eq!(actual, expected);
+    }
+
+    #[rstest]
+    #[case(1, 1, false)]
+    #[case(2, 1, true)]
+    #[case(3, 1, true)]
+    #[case(4, 1, true)]
+    #[case(5, 1, true)]
+    #[case(6, 1, false)]
+    #[case(1, 2, false)]
+    #[case(2, 2, true)]
+    #[case(3, 2, true)]
+    #[case(4, 2, true)]
+    #[case(5, 2, true)]
+    #[case(6, 2, false)]
+    #[case(1, 3, false)]
+    #[case(2, 3, true)]
+    #[case(3, 3, true)]
+    #[case(4, 3, true)]
+    #[case(5, 3, true)]
+    #[case(6, 3, false)]
+    fn part_borders_gear_tests(
+        #[case] col_num: i32,
+        #[case] line_num: usize,
+        #[case] expected: bool,
+    ) {
+        let sample_part = PartNumber {
+            line_number: 2,
+            start_col: 3,
+            end_col: 5,
+            value: 42,
+        };
+        let gear = Gear {
+            line_number: line_num,
+            col_number: col_num,
+        };
+        let actual = part_borders_gear(&sample_part, &gear);
+
+        assert_eq!(actual, expected);
     }
 
     #[rstest]
@@ -297,7 +415,10 @@ mod tests {
 
         assert_eq!(actual.lines.len(), 10);
         assert_eq!(actual.parts.len(), 11);
+        assert_eq!(actual.gears.len(), 3);
         assert_eq!(actual.parts[9].value, 664);
+        assert_eq!(actual.gears[2].line_number, 8);
+        assert_eq!(actual.gears[2].col_number, 5);
     }
 
     #[test]
@@ -313,13 +434,5 @@ mod tests {
         assert_eq!(actual[1].value, 114);
         assert_eq!(actual[1].start_col, 5);
         assert_eq!(actual[1].end_col, 8);
-    }
-
-    #[ignore]
-    #[test]
-    fn do_stuff_works() {
-        let file_length = do_stuff("test.txt");
-
-        assert_eq!(4361, file_length);
     }
 }
