@@ -16,20 +16,6 @@ struct Elf {
     calories: i32,
 }
 
-#[test]
-fn part1_works() {
-    let actual = part1("test.txt");
-
-    assert_eq!(24000, actual);
-}
-
-#[test]
-fn part2_works() {
-    let actual = part2("test.txt");
-
-    assert_eq!(45000, actual);
-}
-
 fn parse_and_sort_elves(file_name: &str) -> Vec<Elf> {
     let input = utils::read_file("day1", file_name);
     let mut sum: i32 = 0;
@@ -48,4 +34,23 @@ fn parse_and_sort_elves(file_name: &str) -> Vec<Elf> {
     elves.sort_by(|a, b| b.calories.cmp(&a.calories));
 
     return elves;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn part1_works() {
+        let actual = part1("test.txt");
+
+        assert_eq!(24000, actual);
+    }
+
+    #[test]
+    fn part2_works() {
+        let actual = part2("test.txt");
+
+        assert_eq!(45000, actual);
+    }
 }

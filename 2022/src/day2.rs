@@ -1,5 +1,4 @@
 use crate::utils;
-use rstest::rstest;
 
 pub fn part1(file_name: &str) -> i32 {
     let input = utils::read_file("day2", file_name);
@@ -7,24 +6,10 @@ pub fn part1(file_name: &str) -> i32 {
     return input.lines().map(parse_round).map(score_round).sum();
 }
 
-#[test]
-fn part1_works() {
-    let actual = part1("test.txt");
-
-    assert_eq!(actual, 15);
-}
-
 pub fn part2(file_name: &str) -> i32 {
     let input = utils::read_file("day2", file_name);
 
     return input.lines().map(parse_new_strategy).map(score_round).sum();
-}
-
-#[test]
-fn part2_works() {
-    let actual = part2("test.txt");
-
-    assert_eq!(actual, 12);
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -53,17 +38,6 @@ fn score_round(round: Round) -> i32 {
     return round.your_choice as i32 + outcome as i32;
 }
 
-#[rstest]
-#[case("A Y", 8)]
-#[case("B X", 1)]
-#[case("C Z", 6)]
-fn score_round_tests(#[case] input: &str, #[case] expected: i32) {
-    let round = parse_round(input);
-    let actual = score_round(round);
-
-    assert_eq!(actual, expected);
-}
-
 fn decide_outcome(round: &Round) -> Outcome {
     match round.your_choice {
         Shape::ROCK => match round.opponent_choice {
@@ -82,23 +56,6 @@ fn decide_outcome(round: &Round) -> Outcome {
             Shape::SCISSORS => Outcome::TIE,
         },
     }
-}
-
-#[rstest]
-#[case("A X", Outcome::TIE)]
-#[case("B Y", Outcome::TIE)]
-#[case("C Z", Outcome::TIE)]
-#[case("A Y", Outcome::WIN)]
-#[case("B Z", Outcome::WIN)]
-#[case("C X", Outcome::WIN)]
-#[case("A Z", Outcome::LOSS)]
-#[case("B X", Outcome::LOSS)]
-#[case("C Y", Outcome::LOSS)]
-fn decide_outcome_tests(#[case] input: &str, #[case] expected: Outcome) {
-    let round = parse_round(input);
-    let actual = decide_outcome(&round);
-
-    assert_eq!(actual, expected);
 }
 
 fn parse_new_strategy(line: &str) -> Round {
@@ -137,16 +94,6 @@ fn parse_new_strategy(line: &str) -> Round {
     };
 }
 
-#[rstest]
-#[case("A Y", Round { your_choice: Shape::ROCK, opponent_choice: Shape::ROCK})]
-#[case("B X", Round { your_choice: Shape::ROCK, opponent_choice: Shape::PAPER})]
-#[case("C Z", Round { your_choice: Shape::ROCK, opponent_choice: Shape::SCISSORS})]
-fn parse_new_strategy_tests(#[case] input: &str, #[case] expected: Round) {
-    let actual = parse_new_strategy(input);
-
-    assert_eq!(actual, expected);
-}
-
 fn parse_round(line: &str) -> Round {
     let mut space_split = line.split(" ");
     let opponent_choice = match space_split.next().unwrap() {
@@ -168,12 +115,70 @@ fn parse_round(line: &str) -> Round {
     };
 }
 
-#[rstest]
-#[case("C X", Round { your_choice: Shape::ROCK, opponent_choice: Shape::SCISSORS})]
-#[case("B Y", Round { your_choice: Shape::PAPER, opponent_choice: Shape::PAPER})]
-#[case("A Z", Round { your_choice: Shape::SCISSORS, opponent_choice: Shape::ROCK})]
-fn parse_round_tests(#[case] input: &str, #[case] expected: Round) {
-    let actual = parse_round(input);
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::rstest;
 
-    assert_eq!(actual, expected);
+    #[test]
+    fn part1_works() {
+        let actual = part1("test.txt");
+
+        assert_eq!(actual, 15);
+    }
+
+    #[test]
+    fn part2_works() {
+        let actual = part2("test.txt");
+
+        assert_eq!(actual, 12);
+    }
+
+    #[rstest]
+    #[case("A Y", 8)]
+    #[case("B X", 1)]
+    #[case("C Z", 6)]
+    fn score_round_tests(#[case] input: &str, #[case] expected: i32) {
+        let round = parse_round(input);
+        let actual = score_round(round);
+
+        assert_eq!(actual, expected);
+    }
+
+    #[rstest]
+    #[case("A X", Outcome::TIE)]
+    #[case("B Y", Outcome::TIE)]
+    #[case("C Z", Outcome::TIE)]
+    #[case("A Y", Outcome::WIN)]
+    #[case("B Z", Outcome::WIN)]
+    #[case("C X", Outcome::WIN)]
+    #[case("A Z", Outcome::LOSS)]
+    #[case("B X", Outcome::LOSS)]
+    #[case("C Y", Outcome::LOSS)]
+    fn decide_outcome_tests(#[case] input: &str, #[case] expected: Outcome) {
+        let round = parse_round(input);
+        let actual = decide_outcome(&round);
+
+        assert_eq!(actual, expected);
+    }
+
+    #[rstest]
+    #[case("A Y", Round { your_choice: Shape::ROCK, opponent_choice: Shape::ROCK})]
+    #[case("B X", Round { your_choice: Shape::ROCK, opponent_choice: Shape::PAPER})]
+    #[case("C Z", Round { your_choice: Shape::ROCK, opponent_choice: Shape::SCISSORS})]
+    fn parse_new_strategy_tests(#[case] input: &str, #[case] expected: Round) {
+        let actual = parse_new_strategy(input);
+
+        assert_eq!(actual, expected);
+    }
+
+    #[rstest]
+    #[case("C X", Round { your_choice: Shape::ROCK, opponent_choice: Shape::SCISSORS})]
+    #[case("B Y", Round { your_choice: Shape::PAPER, opponent_choice: Shape::PAPER})]
+    #[case("A Z", Round { your_choice: Shape::SCISSORS, opponent_choice: Shape::ROCK})]
+    fn parse_round_tests(#[case] input: &str, #[case] expected: Round) {
+        let actual = parse_round(input);
+
+        assert_eq!(actual, expected);
+    }
 }
