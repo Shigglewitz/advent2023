@@ -11,7 +11,7 @@ fn main() {
     println!("├────────┤");
     print_day("02", day2::part1("real.txt"), day2::part2("real.txt"));
     println!("├────────┤");
-    print_day("03", day3::part1("test.txt"), day3::part2("test.txt"));
+    print_day("03", day3::part1("real.txt"), day3::part2("real.txt"));
     println!("└────────┘");
 
     println!("Farewell, world!");
