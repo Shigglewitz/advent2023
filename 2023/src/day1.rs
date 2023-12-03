@@ -4,7 +4,7 @@ pub fn part1(file_name: &str) -> i32 {
     let input = utils::read_file("day1", file_name);
     let total: i32 = input
         .lines()
-        .map(|line| line.to_string())
+        .map(&str::to_string)
         .map(calibration_value)
         .sum();
 
