@@ -80,25 +80,21 @@ fn get_top_border(schematic: &Schematic, part: &PartNumber) -> String {
     if part.line_number == 0 {
         return "".to_string();
     }
+    let line = &schematic.lines[part.line_number - 1];
     let left_col = cmp::max(part.start_col - 1, 0) as usize;
-    let right_col = cmp::min(
-        schematic.lines[part.line_number - 1].len(),
-        part.end_col as usize + 1,
-    );
+    let right_col = cmp::min(line.len(), part.end_col as usize + 1);
 
-    return schematic.lines[part.line_number - 1][left_col..right_col].to_string();
+    return line[left_col..right_col].to_string();
 }
 
 fn get_bottom_border(schematic: &Schematic, part: &PartNumber) -> String {
     if part.line_number == schematic.lines.len() - 1 {
         return "".to_string();
     }
+    let line = &schematic.lines[part.line_number + 1];
     let left_col = cmp::max(part.start_col - 1, 0) as usize;
-    let right_col = cmp::min(
-        schematic.lines[part.line_number + 1].len(),
-        part.end_col as usize + 1,
-    );
-    return schematic.lines[part.line_number + 1][left_col..right_col].to_string();
+    let right_col = cmp::min(line.len(), part.end_col as usize + 1);
+    return line[left_col..right_col].to_string();
 }
 
 fn get_left_border(schematic: &Schematic, part: &PartNumber) -> String {
@@ -111,12 +107,13 @@ fn get_left_border(schematic: &Schematic, part: &PartNumber) -> String {
 }
 
 fn get_right_border(schematic: &Schematic, part: &PartNumber) -> String {
-    if part.end_col == schematic.lines[part.line_number].len() as i32 {
+    let line = &schematic.lines[part.line_number];
+    if part.end_col == line.len() as i32 {
         return "".to_string();
     }
     let left_col = part.end_col as usize;
     let right_col = part.end_col as usize + 1;
-    return schematic.lines[part.line_number][left_col..right_col].to_string();
+    return line[left_col..right_col].to_string();
 }
 
 fn borders_special_char(schematic: &Schematic, part: &PartNumber) -> bool {
@@ -208,8 +205,6 @@ fn get_part_numbers(line_num: usize, line: &str) -> Vec<PartNumber> {
 mod tests {
     use super::*;
     use rstest::rstest;
-
-    // static TEST_SCHEMATIC: Schematic = get_schematic(utils::read_file("day3", "test.txt"));
 
     fn test_schematic() -> Schematic {
         return get_schematic(utils::read_file("day3", "test.txt"));
@@ -367,7 +362,7 @@ mod tests {
     #[case(9)]
     #[case(10)]
     fn borders_special_char_true(#[case] index: usize) {
-        let schematic = get_schematic(utils::read_file("day3", "test.txt"));
+        let schematic = test_schematic();
         let part = &schematic.parts[index];
         let actual = borders_special_char(&schematic, part);
 
@@ -379,7 +374,7 @@ mod tests {
     #[case(2)]
     #[case(6)]
     fn borders_special_char_false(#[case] index: usize) {
-        let schematic = get_schematic(utils::read_file("day3", "test.txt"));
+        let schematic = test_schematic();
         let part = &schematic.parts[index];
         let actual = borders_special_char(&schematic, part);
 
@@ -410,8 +405,7 @@ mod tests {
 
     #[test]
     fn get_schematic_works() {
-        let input = utils::read_file("day3", "test.txt");
-        let actual = get_schematic(input);
+        let actual = test_schematic();
 
         assert_eq!(actual.lines.len(), 10);
         assert_eq!(actual.parts.len(), 11);
