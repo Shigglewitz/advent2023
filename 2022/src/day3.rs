@@ -4,7 +4,24 @@ use std::collections::HashSet;
 pub fn part1(file_name: &str) -> i32 {
     let input = utils::read_file("day3", file_name);
 
-    return input.lines().map(find_overlap).map(get_priority).sum();
+    return input.lines().map(find_word_overlap).map(get_priority).sum();
+}
+
+pub fn part2(file_name: &str) -> i32 {
+    let input = utils::read_file("day3", file_name);
+
+    let mut lines = input.lines().peekable();
+    let mut sum = 0;
+    while lines.peek().is_some() {
+        let overlap = find_set_overlap(
+            lines.next().unwrap(),
+            lines.next().unwrap(),
+            lines.next().unwrap(),
+        );
+        sum += get_priority(overlap);
+    }
+
+    return sum;
 }
 
 fn get_priority(input: char) -> i32 {
@@ -17,7 +34,25 @@ fn get_priority(input: char) -> i32 {
     }
 }
 
-fn find_overlap(input: &str) -> char {
+fn find_set_overlap(word1: &str, word2: &str, word3: &str) -> char {
+    let mut set1 = HashSet::new();
+    let mut set2 = HashSet::new();
+
+    for letter in word1.chars() {
+        set1.insert(letter);
+    }
+    for letter in word2.chars() {
+        set2.insert(letter);
+    }
+    for letter in word3.chars() {
+        if set1.contains(&letter) && set2.contains(&letter) {
+            return letter;
+        }
+    }
+    panic!("No overlap!")
+}
+
+fn find_word_overlap(input: &str) -> char {
     let half_size = input.len() / 2;
     let left = &input[..half_size];
     let right = &input[half_size..];
@@ -46,6 +81,13 @@ mod tests {
         assert_eq!(actual, 157);
     }
 
+    #[test]
+    fn part2_works() {
+        let actual = part2("test.txt");
+
+        assert_eq!(actual, 70);
+    }
+
     #[rstest]
     #[case('a', 1)]
     #[case('z', 26)]
@@ -57,6 +99,13 @@ mod tests {
         assert_eq!(actual, expected);
     }
 
+    #[test]
+    fn find_set_overlap_test() {
+        let actual = find_set_overlap("abc", "CDa", "ZaZ");
+
+        assert_eq!(actual, 'a');
+    }
+
     #[rstest]
     #[case("abccde", 'c')]
     #[case("vJrwpWtwJgWrhcsFMMfFFhFp", 'p')]
@@ -65,8 +114,8 @@ mod tests {
     #[case("wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn", 'v')]
     #[case("ttgJtRGJQctTZtZT", 't')]
     #[case("CrZsJsPPZsGzwwsLwLmpwMDw", 's')]
-    fn find_overlap_tests(#[case] input: &str, #[case] expected: char) {
-        let actual = find_overlap(input);
+    fn find_word_overlap_tests(#[case] input: &str, #[case] expected: char) {
+        let actual = find_word_overlap(input);
 
         assert_eq!(actual, expected);
     }
