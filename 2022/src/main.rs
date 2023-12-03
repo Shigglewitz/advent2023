@@ -10,4 +10,5 @@ fn main() {
 
     println!("Day 2");
     println!("{}", day2::part1("real.txt").to_string());
+    println!("{}", day2::part2("real.txt").to_string());
 }
