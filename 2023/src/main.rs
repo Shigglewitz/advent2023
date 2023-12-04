@@ -25,8 +25,8 @@ fn main() {
     });
     days.push(Day {
         id: "04",
-        part1: || day4::part1("test.txt"),
-        part2: || day4::part2("test.txt"),
+        part1: || day4::part1("real.txt"),
+        part2: || day4::part2("real.txt"),
     });
     for (index, day) in days.iter().rev().enumerate() {
         if index == 0 {
