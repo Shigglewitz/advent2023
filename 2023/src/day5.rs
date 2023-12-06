@@ -27,9 +27,7 @@ pub fn part2(file_name: &str) -> i64 {
     let seed_to_light = seed_to_water.merge(&almanac.water_to_light_map);
     let seed_to_temperature = seed_to_light.merge(&almanac.light_to_temperature_map);
     let seed_to_humidity = seed_to_temperature.merge(&almanac.temperature_to_humidity_map);
-    let mut seed_to_location = seed_to_humidity.merge(&almanac.humidity_to_location_map);
-
-    seed_to_location.ranges.sort_by(|a, b| a.source_range_start.partial_cmp(&b.source_range_start).unwrap());
+    let seed_to_location = seed_to_humidity.merge(&almanac.humidity_to_location_map);
 
     return seed_to_location
         .ranges
@@ -87,44 +85,16 @@ impl Almanac {
 
         mappings.push(Mapping { ranges });
 
-        let mut almanac = Almanac {
+        let almanac = Almanac {
             seeds,
-            seed_to_soil_map: Mapping::new(),
-            soil_to_fertilizer_map: Mapping::new(),
-            fertilizer_to_water_map: Mapping::new(),
-            water_to_light_map: Mapping::new(),
-            light_to_temperature_map: Mapping::new(),
-            temperature_to_humidity_map: Mapping::new(),
-            humidity_to_location_map: Mapping::new(),
+            seed_to_soil_map: Mapping::from(&mappings[0].ranges),
+            soil_to_fertilizer_map: Mapping::from(&mappings[1].ranges),
+            fertilizer_to_water_map: Mapping::from(&mappings[2].ranges),
+            water_to_light_map: Mapping::from(&mappings[3].ranges),
+            light_to_temperature_map: Mapping::from(&mappings[4].ranges),
+            temperature_to_humidity_map: Mapping::from(&mappings[5].ranges),
+            humidity_to_location_map: Mapping::from(&mappings[6].ranges),
         };
-        almanac
-            .seed_to_soil_map
-            .ranges
-            .append(&mut mappings[0].ranges);
-        almanac
-            .soil_to_fertilizer_map
-            .ranges
-            .append(&mut mappings[1].ranges);
-        almanac
-            .fertilizer_to_water_map
-            .ranges
-            .append(&mut mappings[2].ranges);
-        almanac
-            .water_to_light_map
-            .ranges
-            .append(&mut mappings[3].ranges);
-        almanac
-            .light_to_temperature_map
-            .ranges
-            .append(&mut mappings[4].ranges);
-        almanac
-            .temperature_to_humidity_map
-            .ranges
-            .append(&mut mappings[5].ranges);
-        almanac
-            .humidity_to_location_map
-            .ranges
-            .append(&mut mappings[6].ranges);
         return almanac;
     }
 
@@ -143,14 +113,14 @@ impl Almanac {
     }
 
     fn seed_ranges(&self) -> Vec<SeedRange> {
-        let mut seed_ranges = Vec::new();
-        for chunk in self.seeds.chunks(2) {
-            seed_ranges.push(SeedRange {
+        return self
+            .seeds
+            .chunks(2)
+            .map(|chunk| SeedRange {
                 range_start: chunk[0],
                 range_length: chunk[1],
             })
-        }
-        return seed_ranges;
+            .collect();
     }
 }
 
@@ -159,8 +129,10 @@ struct Mapping {
 }
 
 impl Mapping {
-    fn new() -> Mapping {
-        return Mapping { ranges: Vec::new() };
+    fn from(ranges: &Vec<AlmanacRange>) -> Mapping {
+        let mut mapping = Mapping { ranges: Vec::new() };
+        mapping.ranges.extend(ranges);
+        return mapping;
     }
 
     fn translate(&self, input: i64, forward: bool) -> i64 {
@@ -186,21 +158,24 @@ impl Mapping {
 
         let mut sorted_boundaries: Vec<i64> = Vec::from_iter(boundaries);
         sorted_boundaries.sort();
-        // 0, 1, 56, 70, 93, 97
 
-        let mut new_ranges: Vec<AlmanacRange> = Vec::new();
-        let mut start = sorted_boundaries.first().unwrap();
-        for boundary in sorted_boundaries.iter().skip(1) {
-            let source_range_start = self.translate(*start, false);
-            let destination_range_start = mapping.translate(*start, true);
-            let range_length = boundary - start;
-            new_ranges.push(AlmanacRange {
-                source_range_start,
-                destination_range_start,
-                range_length,
-            });
-            start = boundary;
-        }
+        let mut start = *sorted_boundaries.first().unwrap();
+
+        let new_ranges = sorted_boundaries
+            .iter()
+            .skip(1)
+            .map(|boundary| {
+                let source_range_start = self.translate(start, false);
+                let destination_range_start = mapping.translate(start, true);
+                let range_length = boundary - start;
+                start = *boundary;
+                AlmanacRange {
+                    source_range_start,
+                    destination_range_start,
+                    range_length,
+                }
+            })
+            .collect();
 
         return Mapping { ranges: new_ranges };
     }
@@ -284,7 +259,12 @@ mod test {
             .temperature_to_humidity_map
             .merge(&almanac.humidity_to_location_map);
 
-        assert_eq!(1, 1);
+        assert_eq!(merged.translate(0, true), 1);
+        assert_eq!(merged.translate(56, true), 61);
+        assert_eq!(merged.translate(69, true), 0);
+        assert_eq!(merged.translate(70, true), 74);
+        assert_eq!(merged.translate(93, true), 56);
+        assert_eq!(merged.translate(97, true), 97);
     }
 
     #[test]
