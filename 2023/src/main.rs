@@ -5,6 +5,7 @@ mod day4;
 mod day5;
 mod day6;
 mod day7;
+mod day8;
 mod utils;
 
 fn main() {
@@ -45,6 +46,11 @@ fn main() {
         id: "07",
         part1: || day7::part1("real.txt").to_string(),
         part2: || day7::part2("real.txt").to_string(),
+    });
+    days.push(Day {
+        id: "08",
+        part1: || day8::part1("real.txt").to_string(),
+        part2: || day8::part2("real.txt").to_string(),
     });
     for (index, day) in days.iter().rev().enumerate() {
         if index == 0 {
