@@ -5,8 +5,8 @@ use crate::utils;
 pub fn part1(file_name: &str) -> i64 {
     let input = utils::read_file("day7", file_name);
 
-    let mut hands: Vec<Hand> = input.lines().map(Hand::parse).collect();
-    hands.sort_by(compare_hands);
+    let mut hands: Vec<Hand> = input.lines().map(|line| Hand::parse(line, false)).collect();
+    hands.sort_by(|a, b| compare_hands(a, b, false));
     return hands
         .iter()
         .enumerate()
@@ -17,8 +17,8 @@ pub fn part1(file_name: &str) -> i64 {
 pub fn part2(file_name: &str) -> i64 {
     let input = utils::read_file("day7", file_name);
 
-    let mut hands: Vec<Hand> = input.lines().map(Hand::parse).collect();
-    hands.sort_by(compare_hands_with_jokers);
+    let mut hands: Vec<Hand> = input.lines().map(|line| Hand::parse(line, true)).collect();
+    hands.sort_by(|a, b| compare_hands(a, b, true));
     return hands
         .iter()
         .enumerate()
@@ -40,32 +40,29 @@ enum HandType {
 struct Hand {
     cards: [char; 5],
     bid: i64,
+    hand_type: HandType,
 }
 
 impl Hand {
-    fn parse(input: &str) -> Hand {
+    fn parse(input: &str, allow_jokers: bool) -> Hand {
         let mut split = input.split(" ");
         let mut cards = [' '; 5];
         for (i, card) in split.next().unwrap().chars().take(5).enumerate() {
             cards[i] = card;
         }
         let bid = split.next().unwrap().parse::<i64>().unwrap();
-        return Hand { cards, bid };
+        return Hand {
+            cards,
+            bid,
+            hand_type: Hand::score_hand(cards, allow_jokers),
+        };
     }
 
-    fn score_hand_with_jokers(&self) -> HandType {
-        return self.score_hand_private(true);
-    }
-
-    fn score_hand(&self) -> HandType {
-        return self.score_hand_private(false);
-    }
-
-    fn score_hand_private(&self, allow_jokers: bool) -> HandType {
+    fn score_hand(cards: [char; 5], allow_jokers: bool) -> HandType {
         let mut map: HashMap<char, i32> = HashMap::new();
 
         let mut num_wilds = 0;
-        for card in self.cards {
+        for card in cards {
             if card == 'J' && allow_jokers {
                 num_wilds = num_wilds + 1;
                 continue;
@@ -100,15 +97,7 @@ impl Hand {
         }
     }
 
-    fn score_card(input: &char) -> i32 {
-        return Self::score_card_private(&input, false);
-    }
-
-    fn score_card_with_jokers(input: &char) -> i32 {
-        return Self::score_card_private(&input, true);
-    }
-
-    fn score_card_private(input: &char, allow_jokers: bool) -> i32 {
+    fn score_card(input: &char, allow_jokers: bool) -> i32 {
         if input == &'J' && allow_jokers {
             return 1;
         }
@@ -131,28 +120,14 @@ impl Hand {
     }
 }
 
-fn compare_hands(a: &Hand, b: &Hand) -> Ordering {
-    let order = b.score_hand().cmp(&a.score_hand());
+fn compare_hands(a: &Hand, b: &Hand, allow_jokers: bool) -> Ordering {
+    let order = b.hand_type.cmp(&a.hand_type);
     if order != Ordering::Equal {
         return order;
     }
     for i in 0..5 {
-        let char_order = Hand::score_card(&a.cards[i]).cmp(&Hand::score_card(&b.cards[i]));
-        if char_order != Ordering::Equal {
-            return char_order;
-        }
-    }
-    panic!("unable to compare");
-}
-
-fn compare_hands_with_jokers(a: &Hand, b: &Hand) -> Ordering {
-    let order = b.score_hand_with_jokers().cmp(&a.score_hand_with_jokers());
-    if order != Ordering::Equal {
-        return order;
-    }
-    for i in 0..5 {
-        let char_order = Hand::score_card_with_jokers(&a.cards[i])
-            .cmp(&Hand::score_card_with_jokers(&b.cards[i]));
+        let char_order = Hand::score_card(&a.cards[i], allow_jokers)
+            .cmp(&Hand::score_card(&b.cards[i], allow_jokers));
         if char_order != Ordering::Equal {
             return char_order;
         }
@@ -167,7 +142,7 @@ mod test {
 
     fn test_hands() -> Vec<Hand> {
         let input = &utils::read_file("day7", "test.txt");
-        return input.lines().map(Hand::parse).collect();
+        return input.lines().map(|line| Hand::parse(line, false)).collect();
     }
 
     #[test]
@@ -186,7 +161,7 @@ mod test {
 
     #[test]
     fn hand_parse_works() {
-        let hand = Hand::parse("32T3K 765");
+        let hand = Hand::parse("32T3K 765", false);
 
         assert_eq!(hand.bid, 765);
         assert_eq!(hand.cards[0], '3');
@@ -205,8 +180,8 @@ mod test {
     #[case("A23A4", HandType::OnePair)]
     #[case("23456", HandType::HighCard)]
     fn score_hand_tests(#[case] input: &str, #[case] expected: HandType) {
-        let hand = Hand::parse(&format!("{} 0", input));
-        let actual = hand.score_hand();
+        let hand = Hand::parse(&format!("{} 0", input), false);
+        let actual = hand.hand_type;
 
         assert_eq!(actual, expected);
     }
@@ -215,7 +190,7 @@ mod test {
     fn sort_hands() {
         let mut hands = test_hands();
 
-        hands.sort_by(compare_hands);
+        hands.sort_by(|a, b| compare_hands(a, b, false));
 
         assert_eq!(hands[0].bid, 765);
         assert_eq!(hands[1].bid, 220);
