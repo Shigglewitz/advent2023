@@ -5,7 +5,7 @@ use crate::utils;
 pub fn part1(file_name: &str) -> i32 {
     let input = utils::read_file("day6", file_name);
 
-    return find_non_repeating_segment(&input, 4);   
+    return find_non_repeating_segment(&input, 4);
 }
 
 pub fn part2(file_name: &str) -> i32 {
@@ -14,7 +14,7 @@ pub fn part2(file_name: &str) -> i32 {
     return find_non_repeating_segment(&input, 14);
 }
 
-fn find_non_repeating_segment(input: &str, length: usize) -> i32{
+fn find_non_repeating_segment(input: &str, length: usize) -> i32 {
     let mut vec = Vec::new();
     for _ in 0..length {
         vec.push(' ');
@@ -73,7 +73,11 @@ mod test {
     #[case("nppdvjthqldpwncqszvftbrmjlhg", 14, 23)]
     #[case("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg", 14, 29)]
     #[case("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw", 14, 26)]
-    fn find_non_repeating_segment_tests(#[case] input: &str, #[case] length_to_find: usize, #[case] expected: i32) {
+    fn find_non_repeating_segment_tests(
+        #[case] input: &str,
+        #[case] length_to_find: usize,
+        #[case] expected: i32,
+    ) {
         let actual = find_non_repeating_segment(input, length_to_find);
 
         assert_eq!(actual, expected);
