@@ -26,7 +26,7 @@ struct Game {
 }
 
 fn sum_game_powers(file_name: &str) -> i32 {
-    let input = utils::read_file("day2", file_name);
+    let input = utils::read_file("day02", file_name);
     return input.lines().map(parse_game).map(find_game_power).sum();
 }
 
@@ -51,7 +51,7 @@ fn find_game_power(game: Game) -> i32 {
 }
 
 fn sum_possible_games(file_name: &str) -> i32 {
-    let input = utils::read_file("day2", file_name);
+    let input = utils::read_file("day02", file_name);
     return input
         .lines()
         .map(parse_game)

@@ -21,7 +21,7 @@ treb7uchet"
         .lines()
         .collect();
 
-    let actual: String = read_file("day1", "test_1.txt").lines().collect();
+    let actual: String = read_file("day01", "test_1.txt").lines().collect();
 
     assert_eq!(expected, actual);
 }

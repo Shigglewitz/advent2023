@@ -1,7 +1,7 @@
 use crate::utils;
 
 pub fn part1(file_name: &str) -> i32 {
-    let input = utils::read_file("day4", file_name);
+    let input = utils::read_file("day04", file_name);
 
     return input
         .lines()
@@ -11,7 +11,7 @@ pub fn part1(file_name: &str) -> i32 {
 }
 
 pub fn part2(file_name: &str) -> i32 {
-    let input = utils::read_file("day4", file_name);
+    let input = utils::read_file("day04", file_name);
 
     let mut cards: Vec<Card> = input.lines().map(Card::from).collect();
 

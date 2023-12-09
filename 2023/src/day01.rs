@@ -1,7 +1,7 @@
 use crate::utils;
 
 pub fn part1(file_name: &str) -> i32 {
-    let input = utils::read_file("day1", file_name);
+    let input = utils::read_file("day01", file_name);
     let total: i32 = input
         .lines()
         .map(&str::to_string)
@@ -12,7 +12,7 @@ pub fn part1(file_name: &str) -> i32 {
 }
 
 pub fn part2(file_name: &str) -> i32 {
-    let input = utils::read_file("day1", file_name);
+    let input = utils::read_file("day01", file_name);
     let total: i32 = input
         .lines()
         .map(translate_to_numeric)

@@ -4,14 +4,14 @@ use crate::utils;
 use num::integer;
 
 pub fn part1(file_name: &str) -> i64 {
-    let input = utils::read_file("day8", file_name);
+    let input = utils::read_file("day08", file_name);
 
     let problem = Problem::parse(&input);
     return problem.solve("AAA", "ZZZ");
 }
 
 pub fn part2(file_name: &str) -> i64 {
-    let input = utils::read_file("day8", file_name);
+    let input = utils::read_file("day08", file_name);
 
     let problem = Problem::parse(&input);
     let current_nodes: Vec<String> = problem
@@ -106,7 +106,7 @@ mod test {
 
     #[test]
     fn problem_parse_works() {
-        let actual = Problem::parse(&utils::read_file("day8", "test.txt"));
+        let actual = Problem::parse(&utils::read_file("day08", "test.txt"));
 
         assert_eq!(actual.instructions, vec!('R', 'L'));
     }

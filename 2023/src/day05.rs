@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use crate::utils;
 
 pub fn part1(file_name: &str) -> i64 {
-    let input = utils::read_file("day5", file_name);
+    let input = utils::read_file("day05", file_name);
 
     let almanac = Almanac::from(&input);
     return almanac
@@ -15,7 +15,7 @@ pub fn part1(file_name: &str) -> i64 {
 }
 
 pub fn part2(file_name: &str) -> i64 {
-    let input = utils::read_file("day5", file_name);
+    let input = utils::read_file("day05", file_name);
 
     let almanac = Almanac::from(&input);
     let seed_ranges = almanac.seed_ranges();
@@ -234,7 +234,7 @@ mod test {
     use super::*;
 
     fn test_almanac() -> Almanac {
-        return Almanac::from(&utils::read_file("day5", "test.txt"));
+        return Almanac::from(&utils::read_file("day05", "test.txt"));
     }
 
     #[test]

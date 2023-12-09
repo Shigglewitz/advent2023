@@ -1,14 +1,14 @@
 use crate::utils;
 
 pub fn part1(file_name: &str) -> i64 {
-    let input = utils::read_file("day6", file_name);
+    let input = utils::read_file("day06", file_name);
 
     let races = Race::parse(&input);
     return races.iter().map(Race::num_ways_to_beat).product();
 }
 
 pub fn part2(file_name: &str) -> i64 {
-    let input = utils::read_file("day6", file_name);
+    let input = utils::read_file("day06", file_name);
 
     let race = Race::parse_ignore_spaces(&input);
     return race.num_ways_to_beat_efficient();
@@ -147,7 +147,7 @@ mod test {
     use rstest::rstest;
 
     fn test_races() -> Vec<Race> {
-        return Race::parse(&utils::read_file("day6", "test.txt"));
+        return Race::parse(&utils::read_file("day06", "test.txt"));
     }
 
     #[test]
@@ -184,7 +184,7 @@ mod test {
 
     #[test]
     fn race_parse_ignore_spaces_works() {
-        let actual = Race::parse_ignore_spaces(&utils::read_file("day6", "test.txt"));
+        let actual = Race::parse_ignore_spaces(&utils::read_file("day06", "test.txt"));
 
         assert_eq!(actual.time, 71530);
         assert_eq!(actual.distance_record, 940200);

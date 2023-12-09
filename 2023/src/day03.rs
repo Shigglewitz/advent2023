@@ -2,7 +2,7 @@ use crate::utils;
 use std::cmp;
 
 pub fn part1(file_name: &str) -> i32 {
-    let input = utils::read_file("day3", file_name);
+    let input = utils::read_file("day03", file_name);
 
     let schematic = get_schematic(input);
 
@@ -15,7 +15,7 @@ pub fn part1(file_name: &str) -> i32 {
 }
 
 pub fn part2(file_name: &str) -> i32 {
-    let input = utils::read_file("day3", file_name);
+    let input = utils::read_file("day03", file_name);
 
     let schematic = get_schematic(input);
 
@@ -207,7 +207,7 @@ mod tests {
     use rstest::rstest;
 
     fn test_schematic() -> Schematic {
-        return get_schematic(utils::read_file("day3", "test.txt"));
+        return get_schematic(utils::read_file("day03", "test.txt"));
     }
 
     #[test]

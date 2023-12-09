@@ -1,7 +1,7 @@
 use crate::utils;
 
 pub fn part1(file_name: &str) -> i32 {
-    let input = utils::read_file("day9", file_name);
+    let input = utils::read_file("day09", file_name);
 
     let histories: Vec<History> = input.lines().map(History::parse).collect();
 
@@ -9,7 +9,7 @@ pub fn part1(file_name: &str) -> i32 {
 }
 
 pub fn part2(file_name: &str) -> i32 {
-    let input = utils::read_file("day9", file_name);
+    let input = utils::read_file("day09", file_name);
 
     let histories: Vec<History> = input.lines().map(History::parse).collect();
 
@@ -112,7 +112,7 @@ mod test {
 
     #[test]
     fn history_previous_value_thorough() {
-        let histories: Vec<History> = utils::read_file("day9", "test.txt")
+        let histories: Vec<History> = utils::read_file("day09", "test.txt")
             .lines()
             .map(History::parse)
             .collect();

@@ -3,7 +3,7 @@ use std::{cmp::Ordering, collections::HashMap};
 use crate::utils;
 
 pub fn part1(file_name: &str) -> i64 {
-    let input = utils::read_file("day7", file_name);
+    let input = utils::read_file("day07", file_name);
 
     let mut hands: Vec<Hand> = input.lines().map(|line| Hand::parse(line, false)).collect();
     hands.sort_by(|a, b| compare_hands(a, b, false));
@@ -15,7 +15,7 @@ pub fn part1(file_name: &str) -> i64 {
 }
 
 pub fn part2(file_name: &str) -> i64 {
-    let input = utils::read_file("day7", file_name);
+    let input = utils::read_file("day07", file_name);
 
     let mut hands: Vec<Hand> = input.lines().map(|line| Hand::parse(line, true)).collect();
     hands.sort_by(|a, b| compare_hands(a, b, true));
@@ -141,7 +141,7 @@ mod test {
     use rstest::rstest;
 
     fn test_hands() -> Vec<Hand> {
-        let input = &utils::read_file("day7", "test.txt");
+        let input = &utils::read_file("day07", "test.txt");
         return input.lines().map(|line| Hand::parse(line, false)).collect();
     }
 
