@@ -7,7 +7,7 @@ pub fn part1(file_name: &str) -> i64 {
     let input = utils::read_file("day8", file_name);
 
     let problem = Problem::parse(&input);
-    return problem.solve_zzz("AAA");
+    return problem.solve("AAA", "ZZZ");
 }
 
 pub fn part2(file_name: &str) -> i64 {
@@ -20,9 +20,7 @@ pub fn part2(file_name: &str) -> i64 {
         .filter(|key| key.ends_with("A"))
         .map(|value| value.to_string())
         .collect();
-    let solutions = current_nodes
-        .iter()
-        .map(|node| problem.solve_ends_with_z(node));
+    let solutions = current_nodes.iter().map(|node| problem.solve(node, "Z"));
     return solutions.fold(1, |a, b| integer::lcm(a, b));
 }
 
@@ -63,28 +61,11 @@ impl Problem {
         };
     }
 
-    fn solve_zzz(&self, key: &str) -> i64 {
+    fn solve(&self, key: &str, suffix: &str) -> i64 {
         let num_instructions = self.instructions.len();
         let mut num_steps = 0;
         let mut next_key = key;
-        while next_key != &"ZZZ".to_string() {
-            let instruction = self.instructions[num_steps % num_instructions];
-            if instruction == 'L' {
-                next_key = &self.nodes.get(next_key).unwrap().0;
-            } else {
-                next_key = &self.nodes.get(next_key).unwrap().1;
-            }
-            num_steps = num_steps + 1;
-        }
-
-        return num_steps as i64;
-    }
-
-    fn solve_ends_with_z(&self, key: &str) -> i64 {
-        let num_instructions = self.instructions.len();
-        let mut num_steps = 0;
-        let mut next_key = key;
-        while !next_key.ends_with("Z") {
+        while !next_key.ends_with(suffix) {
             let instruction = self.instructions[num_steps % num_instructions];
             if instruction == 'L' {
                 next_key = &self.nodes.get(next_key).unwrap().0;
