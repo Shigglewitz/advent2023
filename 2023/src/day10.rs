@@ -4,27 +4,18 @@ pub fn part1(file_name: &str) -> i32 {
     let input = utils::read_file("day10", file_name);
 
     let pipe_maze = PipeMaze::parse(&input);
-    let animal_tile = pipe_maze.find_animal_tile();
-    let mut start_points: Vec<Option<&Tile>> = Vec::new();
-    start_points.push(pipe_maze.get_tile_at(animal_tile.point.x, animal_tile.point.y + 1));
-    start_points.push(pipe_maze.get_tile_at(animal_tile.point.x, animal_tile.point.y - 1));
-    start_points.push(pipe_maze.get_tile_at(animal_tile.point.x + 1, animal_tile.point.y));
-    start_points.push(pipe_maze.get_tile_at(animal_tile.point.x - 1, animal_tile.point.y));
+    let path = pipe_maze.find_path();
 
-    let length = start_points.iter()
-    .filter(|option| option.is_some())
-    .map(|option| option.unwrap())
-    .map(|tile| pipe_maze.trace_to_animal(animal_tile, tile))
-    .filter(|option| option.is_some())
-    .map(|option| option.unwrap())
-    .next().unwrap();
-
-
-    return (length / 2)  + 1;
+    let length = path.len() as i32;
+    return (length / 2) + 1;
 }
 
 pub fn part2(file_name: &str) -> i32 {
-    return part1(file_name);
+    let input = utils::read_file("day10", file_name);
+
+    let pipe_maze = PipeMaze::parse(&input);
+
+    return pipe_maze.shoe_lace();
 }
 
 struct PipeMaze {
@@ -84,13 +75,16 @@ impl PipeMaze {
         return true;
     }
 
-    fn trace_to_animal(&self, animal_tile: &Tile, start: &Tile) -> Option<i32> {
-        let mut distance = 0;
+    fn trace_to_animal(&self, animal_tile: &Tile, start: &Tile) -> Option<Vec<&Tile>> {
+        let mut path: Vec<&Tile> = Vec::new();
         let mut finished = false;
         let mut curr_tile = start;
         let mut prev_tile = animal_tile;
         while !finished {
-            distance = distance + 1;
+            path.push(
+                self.get_tile_at(curr_tile.point.x, curr_tile.point.y)
+                    .unwrap(),
+            );
             let (point_1, point_2) = curr_tile.points_at();
             if !self.is_point_valid(&point_1) {
                 return None;
@@ -110,7 +104,7 @@ impl PipeMaze {
             finished = curr_tile.pipe == 'S';
         }
 
-        return Some(distance);
+        return Some(path);
     }
 
     fn find_animal_tile(&self) -> &Tile {
@@ -123,6 +117,54 @@ impl PipeMaze {
         }
 
         panic!("no animal found in maze!");
+    }
+
+    fn find_path(&self) -> Vec<&Tile> {
+        let animal_tile: &Tile = self.find_animal_tile();
+        let mut start_points: Vec<Option<&Tile>> = Vec::new();
+        start_points.push(self.get_tile_at(animal_tile.point.x, animal_tile.point.y + 1));
+        start_points.push(self.get_tile_at(animal_tile.point.x, animal_tile.point.y - 1));
+        start_points.push(self.get_tile_at(animal_tile.point.x + 1, animal_tile.point.y));
+        start_points.push(self.get_tile_at(animal_tile.point.x - 1, animal_tile.point.y));
+
+        let path = start_points
+            .iter()
+            .filter(|option| option.is_some())
+            .map(|option| option.unwrap())
+            .map(|tile| self.trace_to_animal(animal_tile, tile))
+            .filter(|option| option.is_some())
+            .map(|option| option.unwrap())
+            .next()
+            .unwrap();
+
+        return path;
+    }
+
+    // https://en.wikipedia.org/wiki/Shoelace_formula
+    fn shoe_lace(&self) -> i32 {
+        let path = self.find_path();
+        let first = path.first().unwrap();
+        let last = path.last().unwrap();
+        let animal_tile_is_vertex = first.point.x != last.point.x && first.point.y != last.point.y;
+        let vertex_pipes = vec!['F', '7', 'J', 'L'];
+
+        let mut verticies: Vec<&Tile> = path
+            .iter()
+            .filter(|tile| vertex_pipes.contains(&tile.pipe))
+            .map(|tile| *tile)
+            .collect();
+        if animal_tile_is_vertex {
+            verticies.push(self.find_animal_tile());
+        }
+        let raw_area = verticies
+            .windows(2)
+            .map(|arr| (arr[0].point.y + arr[1].point.y) * (arr[0].point.x - arr[1].point.x))
+            .sum::<i32>()
+            .abs();
+
+        let divide_me_by_two = raw_area - (path.len() as i32) + 1;
+
+        return divide_me_by_two / 2;
     }
 }
 
@@ -223,7 +265,7 @@ mod test {
 
     #[test]
     fn part2_works() {
-        let actual = part2("test1.txt");
+        let actual = part2("test3.txt");
 
         assert_eq!(actual, 4);
     }
@@ -317,9 +359,10 @@ mod test {
         let pipe_maze = test_maze();
         let animal_tile = pipe_maze.get_tile_at(1, 1).unwrap();
         let start_tile = pipe_maze.get_tile_at(start_x, start_y).unwrap();
-        let actual = pipe_maze.trace_to_animal(animal_tile, start_tile);
+        let path_option: Option<Vec<&Tile>> = pipe_maze.trace_to_animal(animal_tile, start_tile);
+        let distance = path_option.unwrap().len();
 
-        assert_eq!(actual, Some(7));
+        assert_eq!(distance, 7);
     }
 
     #[rstest]
@@ -329,9 +372,10 @@ mod test {
         let pipe_maze = test_maze_2();
         let animal_tile = pipe_maze.get_tile_at(0, 2).unwrap();
         let start_tile = pipe_maze.get_tile_at(start_x, start_y).unwrap();
-        let actual = pipe_maze.trace_to_animal(animal_tile, start_tile);
+        let path_option = pipe_maze.trace_to_animal(animal_tile, start_tile);
+        let distance = path_option.unwrap().len();
 
-        assert_eq!(actual, Some(15));
+        assert_eq!(distance, 15);
     }
 
     #[test]
@@ -350,5 +394,19 @@ mod test {
 
         assert_eq!(actual.point.x, 0);
         assert_eq!(actual.point.y, 2);
+    }
+
+    #[rstest]
+    #[case("test1.txt", 1)]
+    #[case("test2.txt", 1)]
+    #[case("test3.txt", 4)]
+    #[case("test4.txt", 4)]
+    #[case("test5.txt", 8)]
+    #[case("test6.txt", 10)]
+    fn pipe_maze_shoe_lace_tests(#[case] file_name: &str, #[case] expected: i32) {
+        let pipe_maze = PipeMaze::parse(&utils::read_file("day10", file_name));
+        let actual = pipe_maze.shoe_lace();
+
+        assert_eq!(actual, expected);
     }
 }
