@@ -72,11 +72,11 @@ fn main() {
         part1: || day11::part1("real.txt").to_string(),
         part2: || day11::part2("real.txt").to_string(),
     });
-    //    days.push(Day {
-    //        id: "12",
-    //        part1: || day12::part1("real.txt").to_string(),
-    //        part2: || day12::part2("real.txt").to_string(),
-    //    });
+    days.push(Day {
+        id: "12",
+        part1: || day12::part1("real.txt").to_string(),
+        part2: || day12::part2("real.txt").to_string(),
+    });
     days.push(Day {
         id: "13",
         part1: || day13::part1("real.txt").to_string(),
