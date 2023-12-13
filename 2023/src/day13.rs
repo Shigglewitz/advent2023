@@ -4,14 +4,19 @@ pub fn part1(file_name: &str) -> i32 {
     let input = utils::read_file("day13", file_name);
 
     let patterns = Pattern::parse(&input);
-    return patterns.iter().map(Pattern::score).sum();
+    return patterns.iter().map(|pattern| pattern.score(false)).sum();
 }
 
 pub fn part2(file_name: &str) -> i32 {
     let input = utils::read_file("day13", file_name);
 
     let patterns = Pattern::parse(&input);
-    return patterns.iter().map(Pattern::score_smudge).sum();
+    return patterns.iter().map(|pattern| pattern.score(true)).sum();
+}
+
+enum Orientation {
+    HORIZONTAL,
+    VERTICAL,
 }
 
 struct Pattern {
@@ -44,9 +49,16 @@ impl Pattern {
         let num_patterns = patterns.len();
         for i in 0..num_patterns {
             let num_cols = patterns[i].lines[0].len();
-            let line_vecs: Vec<Vec<char>> = patterns[i].lines.iter().map(|line| line.chars().collect::<Vec<char>>()).collect();
+            let line_vecs: Vec<Vec<char>> = patterns[i]
+                .lines
+                .iter()
+                .map(|line| line.chars().collect::<Vec<char>>())
+                .collect();
             for j in 0..num_cols {
-                let new_col = line_vecs.iter().map(|line_vec| line_vec[j]).collect::<String>();
+                let new_col = line_vecs
+                    .iter()
+                    .map(|line_vec| line_vec[j])
+                    .collect::<String>();
                 patterns[i].cols.push(new_col);
             }
         }
@@ -54,109 +66,44 @@ impl Pattern {
         return patterns;
     }
 
-    fn find_horizontal_mirror(&self) -> Option<i32> {
+    fn find_mirror(&self, orientation: Orientation, allow_smudge: bool) -> Option<i32> {
         let mut possible_indices: Vec<usize> = Vec::new();
-        for (index, arr) in self.lines.windows(2).enumerate() {
-            if arr[0] == arr[1] {
+        let array = match orientation {
+            Orientation::HORIZONTAL => &self.lines,
+            Orientation::VERTICAL => &self.cols,
+        };
+        for (index, arr) in array.windows(2).enumerate() {
+            if allow_smudge {
+                possible_indices.push(index)
+            } else if arr[0] == arr[1] {
                 possible_indices.push(index);
             }
         }
+        let allowed_differences = if allow_smudge { 1 } else { 0 };
 
-        return possible_indices.iter().filter(|index| {
-            self.is_horizontal_mirror(index)
-        }).map(|index| *index as i32)
-        .collect::<Vec<i32>>()
-        .first()
-        .copied();
+        return possible_indices
+            .iter()
+            .filter(|index| self.is_mirror(index, array, allowed_differences))
+            .map(|index| *index as i32)
+            .collect::<Vec<i32>>()
+            .first()
+            .copied();
     }
 
-    fn is_horizontal_mirror(&self, possible_index: &usize) -> bool {
-        let mut top_index = *possible_index as i32;
-        let mut bottom_index = possible_index + 1;
-
-        while top_index >= 0 && bottom_index < self.lines.len() {
-            if self.lines[top_index as usize] != self.lines[bottom_index] {
-                return false;
-            }
-            top_index -= 1;
-            bottom_index += 1;
-        }
-
-        return true;
-    }
-
-    fn find_vertical_mirror(&self) -> Option<i32> {
-        let mut possible_indices: Vec<usize> = Vec::new();
-        for (index, arr) in self.cols.windows(2).enumerate() {
-            if arr[0] == arr[1] {
-                possible_indices.push(index);
-            }
-        }
-
-        return possible_indices.iter().filter(|index| {
-            self.is_vertical_mirror(index)
-        }).map(|index| *index as i32)
-        .collect::<Vec<i32>>()
-        .first()
-        .copied();
-    }
-
-    fn is_vertical_mirror(&self, possible_index: &usize) -> bool {
-        let mut top_index = *possible_index as i32;
-        let mut bottom_index = possible_index + 1;
-
-        while top_index >= 0 && bottom_index < self.cols.len() {
-            if self.cols[top_index as usize] != self.cols[bottom_index] {
-                return false;
-            }
-            top_index -= 1;
-            bottom_index += 1;
-        }
-
-        return true;
-    }
-
-    fn score(&self) -> i32 {
-        let vertical_mirror = self.find_vertical_mirror();
-        let horizontal_mirror = self.find_horizontal_mirror();
-        let mut sum = 0;
-
-        match vertical_mirror {
-            None => (),
-            Some(val) => sum = sum + val + 1,
-        }
-        match horizontal_mirror {
-            None => (),
-            Some(val) => sum = sum + ((val + 1) * 100),
-        }
-
-        return sum;
-    }
-
-    fn find_horizontal_mirror_smudge(&self) -> Option<i32> {
-        let mut possible_indices: Vec<usize> = Vec::new();
-        for (index, arr) in self.lines.windows(2).enumerate() {
-            
-                possible_indices.push(index);
-        }
-
-        return possible_indices.iter().filter(|index| {
-            self.is_horizontal_mirror_smudge(index)
-        }).map(|index| *index as i32)
-        .collect::<Vec<i32>>()
-        .first()
-        .copied();
-    }
-
-    fn is_horizontal_mirror_smudge(&self, possible_index: &usize) -> bool {
+    fn is_mirror(
+        &self,
+        possible_index: &usize,
+        array: &Vec<String>,
+        allowed_differences: i32,
+    ) -> bool {
         let mut top_index = *possible_index as i32;
         let mut bottom_index = possible_index + 1;
         let mut differences = 0;
 
-        while top_index >= 0 && bottom_index < self.lines.len() {
-            let num_chars = self.lines[bottom_index].len();
-            let mut top_iter = self.lines[top_index as usize].chars();
-            let mut bottom_iter = self.lines[bottom_index].chars();
+        while top_index >= 0 && bottom_index < array.len() {
+            let num_chars = array[bottom_index].len();
+            let mut top_iter = array[top_index as usize].chars();
+            let mut bottom_iter = array[bottom_index].chars();
             for _ in 0..num_chars {
                 if top_iter.next().unwrap() != bottom_iter.next().unwrap() {
                     differences += 1;
@@ -166,47 +113,12 @@ impl Pattern {
             bottom_index += 1;
         }
 
-        return differences == 1;
+        return differences == allowed_differences;
     }
 
-    fn find_vertical_mirror_smudge(&self) -> Option<i32> {
-        let mut possible_indices: Vec<usize> = Vec::new();
-        for (index, arr) in self.cols.windows(2).enumerate() {
-                possible_indices.push(index);
-        }
-
-        return possible_indices.iter().filter(|index| {
-            self.is_vertical_mirror_smudge(index)
-        }).map(|index| *index as i32)
-        .collect::<Vec<i32>>()
-        .first()
-        .copied();
-    }
-
-    fn is_vertical_mirror_smudge(&self, possible_index: &usize) -> bool {
-        let mut top_index = *possible_index as i32;
-        let mut bottom_index = possible_index + 1;
-        let mut differences = 0;
-
-        while top_index >= 0 && bottom_index < self.cols.len() {
-            let num_chars = self.cols[bottom_index].len();
-            let mut top_iter = self.cols[top_index as usize].chars();
-            let mut bottom_iter = self.cols[bottom_index].chars();
-            for _ in 0..num_chars {
-                if top_iter.next().unwrap() != bottom_iter.next().unwrap() {
-                    differences += 1;
-                }
-            }
-            top_index -= 1;
-            bottom_index += 1;
-        }
-
-        return differences == 1;
-    }
-
-    fn score_smudge(&self) -> i32 {
-        let vertical_mirror = self.find_vertical_mirror_smudge();
-        let horizontal_mirror = self.find_horizontal_mirror_smudge();
+    fn score(&self, allow_smudge: bool) -> i32 {
+        let vertical_mirror = self.find_mirror(Orientation::VERTICAL, allow_smudge);
+        let horizontal_mirror = self.find_mirror(Orientation::HORIZONTAL, allow_smudge);
 
         if vertical_mirror.is_some() {
             return vertical_mirror.unwrap() + 1;
@@ -215,28 +127,14 @@ impl Pattern {
             return (horizontal_mirror.unwrap() + 1) * 100;
         }
 
-        panic!("did not find a score!")
+        panic!("no mirror found!");
     }
-}
-
-fn num_diffs_between_str(input1: &str, input2: &str) -> i32 {
-    let mut iter1 = input1.chars();
-    let mut iter2 = input2.chars();
-    let num_chars = input1.len();
-    let mut sum = 0;
-
-    for _ in 0..num_chars {
-        if iter1.next().unwrap() != iter2.next().unwrap() {
-            sum += 1;
-        }
-    } 
-
-    return sum;
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
+    use rstest::rstest;
 
     fn test_patterns() -> Vec<Pattern> {
         let input = utils::read_file("day13", "test.txt");
@@ -271,31 +169,27 @@ mod test {
         assert_eq!(patterns[0].cols[8], "..##...");
     }
 
-    #[test]
-    fn patterns_horizontal_mirror_works() {
+    #[rstest]
+    #[case(0, Orientation::HORIZONTAL, None)]
+    #[case(1, Orientation::HORIZONTAL, Some(3))]
+    #[case(0, Orientation::VERTICAL, Some(4))]
+    #[case(1, Orientation::VERTICAL, None)]
+    fn patterns_find_mirror_tests(
+        #[case] pattern_index: usize,
+        #[case] orientation: Orientation,
+        #[case] expected: Option<i32>,
+    ) {
         let patterns = test_patterns();
-        let first_pattern_actual = (&patterns[0]).find_horizontal_mirror();
-        let second_pattern_actual = (&patterns[1]).find_horizontal_mirror();
+        let actual = (&patterns[pattern_index]).find_mirror(orientation, false);
 
-        assert_eq!(first_pattern_actual, None);
-        assert_eq!(second_pattern_actual, Some(3));
-    }
-
-    #[test]
-    fn patterns_vertical_mirror_works() {
-        let patterns = test_patterns();
-        let first_pattern_actual = (&patterns[0]).find_vertical_mirror();
-        let second_pattern_actual = (&patterns[1]).find_vertical_mirror();
-
-        assert_eq!(first_pattern_actual, Some(4));
-        assert_eq!(second_pattern_actual, None);
+        assert_eq!(actual, expected);
     }
 
     #[test]
     fn patterns_score_works() {
         let patterns = test_patterns();
-        
-        assert_eq!(patterns[0].score(), 5);
-        assert_eq!(patterns[1].score(), 400);
+
+        assert_eq!(patterns[0].score(false), 5);
+        assert_eq!(patterns[1].score(false), 400);
     }
 }
