@@ -42,23 +42,31 @@ pub fn part2(file_name: &str) -> u64 {
 }
 
 struct Platform {
-    rows: Vec<String>,
+    data: Vec<Vec<u8>>,
 }
 
 impl Platform {
     fn parse(input: &str) -> Platform {
-        let rows = input
-            .lines()
-            .map(|line| line.to_string())
-            .collect::<Vec<String>>();
-        return Platform { rows };
+        let mut lines = input.lines().peekable();
+        let line_length = lines.peek().unwrap().len();
+        let num_lines = lines.count();
+        let mut data = vec![vec![0; line_length]; num_lines];
+        for (index, row) in input.lines().enumerate() {
+            data[index] = row.bytes().collect();
+        }
+        return Platform { data };
     }
 
     fn print_rows(&self) -> String {
-        return self.rows.join(
-            "
+        return self
+            .data
+            .iter()
+            .map(|bytes| String::from_utf8(bytes.clone()).unwrap())
+            .collect::<Vec<String>>()
+            .join(
+                "
         ",
-        );
+            );
     }
 
     fn hash_state(&self) -> u64 {
@@ -68,18 +76,11 @@ impl Platform {
     }
 
     fn shift_north(&mut self) {
-        let mut northmost_blocker: Vec<usize> = vec![usize::MAX; self.rows[0].len()];
-        for (index, char) in self.rows[0].chars().enumerate() {
-            match char {
-                'O' => northmost_blocker[index] = 0,
-                '#' => northmost_blocker[index] = 0,
-                _ => (),
-            }
-        }
-        let num_rows = self.rows.len();
-        for row_num in 1..num_rows {
-            let row = self.rows[row_num].clone();
-            for (index, byte) in row.bytes().enumerate() {
+        let mut northmost_blocker: Vec<usize> = vec![usize::MAX; self.data[0].len()];
+        let num_rows = self.data.len();
+        for row_num in 0..num_rows {
+            let row = self.data[row_num].clone();
+            for (index, byte) in row.iter().enumerate() {
                 match byte {
                     b'#' => northmost_blocker[index] = row_num,
                     b'O' => {
@@ -91,8 +92,8 @@ impl Platform {
                         if row_to_move_to == row_num {
                             northmost_blocker[index] = row_num;
                         } else {
-                            self.rows[row_to_move_to].replace_range(index..(index + 1), "O");
-                            self.rows[row_num].replace_range(index..(index + 1), ".");
+                            self.data[row_to_move_to][index] = b'O';
+                            self.data[row_num][index] = b'.';
                             northmost_blocker[index] = row_to_move_to;
                         }
                     }
@@ -104,11 +105,11 @@ impl Platform {
     }
 
     fn shift_west(&mut self) {
-        let num_rows = self.rows.len();
+        let num_rows = self.data.len();
         for row_num in 0..num_rows {
             let mut westmost_blocker = usize::MAX;
-            let row = self.rows[row_num].clone();
-            for (index, byte) in row.bytes().enumerate() {
+            let row = self.data[row_num].clone();
+            for (index, byte) in row.iter().enumerate() {
                 match byte {
                     b'#' => westmost_blocker = index,
                     b'O' => {
@@ -120,9 +121,8 @@ impl Platform {
                         if index_to_move_to == index {
                             westmost_blocker = index;
                         } else {
-                            self.rows[row_num]
-                                .replace_range(index_to_move_to..(index_to_move_to + 1), "O");
-                            self.rows[row_num].replace_range(index..(index + 1), ".");
+                            self.data[row_num][index_to_move_to] = b'O';
+                            self.data[row_num][index] = b'.';
                             westmost_blocker = index_to_move_to;
                         }
                     }
@@ -134,11 +134,11 @@ impl Platform {
     }
 
     fn shift_south(&mut self) {
-        let mut southmost_blocker: Vec<usize> = vec![usize::MAX; self.rows[0].len()];
-        let num_rows = self.rows.len();
+        let mut southmost_blocker: Vec<usize> = vec![usize::MAX; self.data[0].len()];
+        let num_rows = self.data.len();
         for row_num in (0..num_rows).rev() {
-            let row = self.rows[row_num].clone();
-            for (index, byte) in row.bytes().enumerate() {
+            let row = self.data[row_num].clone();
+            for (index, byte) in row.iter().enumerate() {
                 match byte {
                     b'#' => southmost_blocker[index] = row_num,
                     b'O' => {
@@ -150,8 +150,8 @@ impl Platform {
                         if row_to_move_to == row_num {
                             southmost_blocker[index] = row_num;
                         } else {
-                            self.rows[row_to_move_to].replace_range(index..(index + 1), "O");
-                            self.rows[row_num].replace_range(index..(index + 1), ".");
+                            self.data[row_to_move_to][index] = b'O';
+                            self.data[row_num][index] = b'.';
                             southmost_blocker[index] = row_to_move_to;
                         }
                     }
@@ -163,11 +163,11 @@ impl Platform {
     }
 
     fn shift_east(&mut self) {
-        let num_rows = self.rows.len();
+        let num_rows = self.data.len();
         for row_num in 0..num_rows {
             let mut eastmost_blocker = usize::MAX;
-            let row = self.rows[row_num].clone();
-            for (index, byte) in row.bytes().enumerate().rev() {
+            let row = self.data[row_num].clone();
+            for (index, byte) in row.iter().enumerate().rev() {
                 match byte {
                     b'#' => eastmost_blocker = index,
                     b'O' => {
@@ -179,9 +179,8 @@ impl Platform {
                         if index_to_move_to == index {
                             eastmost_blocker = index;
                         } else {
-                            self.rows[row_num]
-                                .replace_range(index_to_move_to..(index_to_move_to + 1), "O");
-                            self.rows[row_num].replace_range(index..(index + 1), ".");
+                            self.data[row_num][index_to_move_to] = b'O';
+                            self.data[row_num][index] = b'.';
                             eastmost_blocker = index_to_move_to;
                         }
                     }
@@ -200,10 +199,10 @@ impl Platform {
     }
 
     fn calculate_load(&self) -> u64 {
-        let num_rows = self.rows.len();
+        let num_rows = self.data.len();
         let mut sum = 0;
-        for (index, row) in self.rows.iter().enumerate() {
-            let this_row = row.chars().filter(|&c| c == 'O').count() * (num_rows - index);
+        for (index, row) in self.data.iter().enumerate() {
+            let this_row = row.iter().filter(|&&c| c == b'O').count() * (num_rows - index);
             sum += this_row;
         }
         return sum as u64;
@@ -230,6 +229,24 @@ mod test {
         let actual = part2("test.txt");
 
         assert_eq!(actual, 64);
+    }
+
+    #[test]
+    fn platform_parse_works() {
+        let platform = test_platform();
+        assert_eq!(
+            platform.print_rows(),
+            "O....#....
+        O.OO#....#
+        .....##...
+        OO.#O....O
+        .O.....O#.
+        O.#..O.#.#
+        ..O..#O..O
+        .......O..
+        #....###..
+        #OO..#...."
+        )
     }
 
     #[test]
