@@ -87,7 +87,7 @@ fn main() {
     days.push(Day {
         id: "14",
         part1: || day14::part1("real.txt").to_string(),
-        part2: || "94876".to_string(),
+        part2: || day14::part2("real.txt").to_string(),
     });
     for (index, day) in days.iter().rev().enumerate() {
         if index == 0 {

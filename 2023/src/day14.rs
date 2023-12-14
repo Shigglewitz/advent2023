@@ -1,3 +1,8 @@
+use std::{
+    collections::{hash_map::DefaultHasher, HashMap},
+    hash::{Hash, Hasher},
+};
+
 use crate::utils;
 
 pub fn part1(file_name: &str) -> u64 {
@@ -8,16 +13,31 @@ pub fn part1(file_name: &str) -> u64 {
     return platform.calculate_load();
 }
 
-#[allow(dead_code)]
 pub fn part2(file_name: &str) -> u64 {
     let input = utils::read_file("day14", file_name);
 
     let mut platform = Platform::parse(&input);
-    // TODO: need to figure out how to programmatically find a cycle
-    (0..97).for_each(|_| {
+    let mut cache: HashMap<u64, usize> = HashMap::new();
+    let mut hashed_state = platform.hash_state();
+    let mut final_cycle_num = 0;
+    let limit = 1_000_000_000;
+
+    for i in 0..limit {
+        if cache.contains_key(&hashed_state) {
+            final_cycle_num = i;
+            break;
+        }
+        cache.insert(hashed_state, i);
         platform.spin_cycle();
-        // println!("after {} cycles, score is {}", i, platform.calculate_load());
-    });
+        hashed_state = platform.hash_state();
+    }
+
+    let cycle_length = final_cycle_num - cache.get(&hashed_state).unwrap();
+    let remaining_cycles = (limit - final_cycle_num) % cycle_length;
+    for _ in 0..remaining_cycles {
+        platform.spin_cycle();
+    }
+
     return platform.calculate_load();
 }
 
@@ -34,6 +54,19 @@ impl Platform {
         return Platform { rows };
     }
 
+    fn print_rows(&self) -> String {
+        return self.rows.join(
+            "
+        ",
+        );
+    }
+
+    fn hash_state(&self) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        self.print_rows().hash(&mut hasher);
+        return hasher.finish();
+    }
+
     fn shift_north(&mut self) {
         let mut northmost_blocker: Vec<usize> = vec![usize::MAX; self.rows[0].len()];
         for (index, char) in self.rows[0].chars().enumerate() {
@@ -45,11 +78,11 @@ impl Platform {
         }
         let num_rows = self.rows.len();
         for row_num in 1..num_rows {
-            let initial_string = self.rows[row_num].clone();
-            for (index, char) in initial_string.chars().enumerate() {
-                match char {
-                    '#' => northmost_blocker[index] = row_num,
-                    'O' => {
+            let row = self.rows[row_num].clone();
+            for (index, byte) in row.bytes().enumerate() {
+                match byte {
+                    b'#' => northmost_blocker[index] = row_num,
+                    b'O' => {
                         let row_to_move_to = if northmost_blocker[index] == usize::MAX {
                             0
                         } else {
@@ -63,7 +96,8 @@ impl Platform {
                             northmost_blocker[index] = row_to_move_to;
                         }
                     }
-                    _ => (),
+                    b'.' => (),
+                    _ => unreachable!("unexpected char while shifting north"),
                 };
             }
         }
@@ -74,8 +108,7 @@ impl Platform {
         for row_num in 0..num_rows {
             let mut westmost_blocker = usize::MAX;
             let row = self.rows[row_num].clone();
-            let bytes = row.bytes();
-            for (index, byte) in bytes.enumerate() {
+            for (index, byte) in row.bytes().enumerate() {
                 match byte {
                     b'#' => westmost_blocker = index,
                     b'O' => {
@@ -105,8 +138,7 @@ impl Platform {
         let num_rows = self.rows.len();
         for row_num in (0..num_rows).rev() {
             let row = self.rows[row_num].clone();
-            let bytes = row.bytes();
-            for (index, byte) in bytes.enumerate() {
+            for (index, byte) in row.bytes().enumerate() {
                 match byte {
                     b'#' => southmost_blocker[index] = row_num,
                     b'O' => {
@@ -135,8 +167,7 @@ impl Platform {
         for row_num in 0..num_rows {
             let mut eastmost_blocker = usize::MAX;
             let row = self.rows[row_num].clone();
-            let bytes = row.bytes();
-            for (index, byte) in bytes.enumerate().rev() {
+            for (index, byte) in row.bytes().enumerate().rev() {
                 match byte {
                     b'#' => eastmost_blocker = index,
                     b'O' => {
@@ -206,10 +237,19 @@ mod test {
         let mut platform = test_platform();
         platform.shift_north();
 
-        assert_eq!(&platform.rows[0], "OOOO.#.O..");
-        assert_eq!(&platform.rows[1], "OO..#....#");
-        assert_eq!(&platform.rows[7], "..O.......");
-        assert_eq!(&platform.rows[9], "#....#....");
+        assert_eq!(
+            platform.print_rows(),
+            "OOOO.#.O..
+        OO..#....#
+        OO..O##..O
+        O..#.OO...
+        ........#.
+        ..#....#.#
+        ..O..#.O.O
+        ..O.......
+        #....###..
+        #....#...."
+        );
     }
 
     #[test]
@@ -227,20 +267,40 @@ mod test {
         let mut platform = test_platform();
         platform.spin_cycle();
 
-        assert_eq!(&platform.rows[0], ".....#....");
-        assert_eq!(&platform.rows[1], "....#...O#");
-        assert_eq!(&platform.rows[8], "#...O###..");
-        assert_eq!(&platform.rows[9], "#..OO#....");
+        assert_eq!(
+            platform.print_rows(),
+            ".....#....
+        ....#...O#
+        ...OO##...
+        .OO#......
+        .....OOO#.
+        .O#...O#.#
+        ....O#....
+        ......OOOO
+        #...O###..
+        #..OO#...."
+        );
     }
 
     #[test]
     fn multiple_spin_cycles() {
         let mut platform = test_platform();
-        (0..3).for_each(|_| platform.spin_cycle());
+        for _ in 0..3 {
+            platform.spin_cycle();
+        }
 
-        assert_eq!(&platform.rows[0], ".....#....");
-        assert_eq!(&platform.rows[1], "....#...O#");
-        assert_eq!(&platform.rows[8], "#...O###.O");
-        assert_eq!(&platform.rows[9], "#.OOO#...O");
+        assert_eq!(
+            platform.print_rows(),
+            ".....#....
+        ....#...O#
+        .....##...
+        ..O#......
+        .....OOO#.
+        .O#...O#.#
+        ....O#...O
+        .......OOO
+        #...O###.O
+        #.OOO#...O"
+        )
     }
 }
