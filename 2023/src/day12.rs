@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use rayon::prelude::*;
 
 use crate::utils;
 
@@ -6,7 +7,7 @@ pub fn part1(file_name: &str) -> usize {
     let input = utils::read_file("day12", file_name);
 
     return input
-        .lines()
+        .par_lines()
         .map(ConditionRecord::parse)
         .map(|record| record.solve())
         .sum();
@@ -17,7 +18,7 @@ pub fn part2(file_name: &str) -> usize {
     let input = utils::read_file("day12", file_name);
 
     return input
-        .lines()
+        .par_lines()
         .map(ConditionRecord::parse)
         .map(|record| record.solve_expanded())
         .sum();
