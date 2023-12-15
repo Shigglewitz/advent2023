@@ -27,39 +27,18 @@ fn benchmark_all(c: &mut Criterion) {
     group.sample_size(20);
     group.warm_up_time(Duration::from_millis(100));
 
-    let file_name = "real.txt";
-
-    let day15_input = &utils::read_file("day15", "real.txt");
-    group.bench_function("d15_p1", |bencher| {
-        bencher.iter(|| day15::part1_with_input(day15_input))
-    });
-    group.bench_function("d15_p2", |bencher| {
-        bencher.iter(|| day15::part2_with_input(day15_input))
-    });
-    group.bench_function("d14_p1", |bencher| bencher.iter(|| day14::part1(file_name)));
-    group.bench_function("d14_p2", |bencher| bencher.iter(|| day14::part2(file_name)));
-    group.bench_function("d13_p1", |bencher| bencher.iter(|| day13::part1(file_name)));
-    group.bench_function("d13_p2", |bencher| bencher.iter(|| day13::part2(file_name)));
-    group.bench_function("d12_p1", |bencher| bencher.iter(|| day12::part1(file_name)));
-    group.bench_function("d12_p2", |bencher| bencher.iter(|| day12::part2(file_name)));
-    group.bench_function("d11_p1", |bencher| bencher.iter(|| day11::part1(file_name)));
-    group.bench_function("d11_p2", |bencher| bencher.iter(|| day11::part2(file_name)));
-    group.bench_function("d10_p1", |bencher| bencher.iter(|| day10::part1(file_name)));
-    group.bench_function("d10_p2", |bencher| bencher.iter(|| day10::part2(file_name)));
-    group.bench_function("d09_p1", |bencher| bencher.iter(|| day09::part1(file_name)));
-    group.bench_function("d09_p2", |bencher| bencher.iter(|| day09::part2(file_name)));
-    group.bench_function("d08_p1", |bencher| bencher.iter(|| day08::part1(file_name)));
-    group.bench_function("d08_p2", |bencher| bencher.iter(|| day08::part2(file_name)));
-    group.bench_function("d07_p1", |bencher| bencher.iter(|| day07::part1(file_name)));
-    group.bench_function("d07_p2", |bencher| bencher.iter(|| day07::part2(file_name)));
-    group.bench_function("d06_p1", |bencher| bencher.iter(|| day06::part1(file_name)));
-    group.bench_function("d06_p2", |bencher| bencher.iter(|| day06::part2(file_name)));
-    group.bench_function("d05_p1", |bencher| bencher.iter(|| day05::part1(file_name)));
-    group.bench_function("d05_p2", |bencher| bencher.iter(|| day05::part2(file_name)));
-    group.bench_function("d04_p1", |bencher| bencher.iter(|| day04::part1(file_name)));
-    group.bench_function("d04_p2", |bencher| bencher.iter(|| day04::part2(file_name)));
-    group.bench_function("d03_p1", |bencher| bencher.iter(|| day03::part1(file_name)));
-    group.bench_function("d03_p2", |bencher| bencher.iter(|| day03::part2(file_name)));
+    benchmark_day15(&mut group);
+    benchmark_day14(&mut group);
+    benchmark_day13(&mut group);
+    benchmark_day12(&mut group);
+    benchmark_day11(&mut group);
+    benchmark_day10(&mut group);
+    benchmark_day09(&mut group);
+    benchmark_day08(&mut group);
+    benchmark_day07(&mut group);
+    benchmark_day06(&mut group);
+    benchmark_day05(&mut group);
+    benchmark_day04(&mut group);
     benchmark_day03(&mut group);
     benchmark_day02(&mut group);
     benchmark_day01(&mut group);
@@ -67,7 +46,118 @@ fn benchmark_all(c: &mut Criterion) {
     group.finish();
 }
 
-fn benchmark_day03(group: &mut BenchmarkGroup<WallTime>) {
+type Group<'a> = BenchmarkGroup<'a, WallTime>;
+
+fn benchmark_day15(group: &mut Group) {
+    let input = &utils::read_file("day15", "real.txt");
+    group.bench_function("d15_p1", |bencher| {
+        bencher.iter(|| day15::part1_with_input(input))
+    });
+    group.bench_function("d15_p2", |bencher| {
+        bencher.iter(|| day15::part2_with_input(input))
+    });
+}
+
+fn benchmark_day14(group: &mut Group) {
+    group.bench_function("d14_p1", |bencher| {
+        bencher.iter(|| day14::part1("real.txt"))
+    });
+    group.bench_function("d14_p2", |bencher| {
+        bencher.iter(|| day14::part2("real.txt"))
+    });
+}
+
+fn benchmark_day13(group: &mut Group) {
+    group.bench_function("d13_p1", |bencher| {
+        bencher.iter(|| day13::part1("real.txt"))
+    });
+    group.bench_function("d13_p2", |bencher| {
+        bencher.iter(|| day13::part2("real.txt"))
+    });
+}
+
+fn benchmark_day12(group: &mut Group) {
+    group.bench_function("d12_p1", |bencher| {
+        bencher.iter(|| day12::part1("real.txt"))
+    });
+    group.bench_function("d12_p2", |bencher| {
+        bencher.iter(|| day12::part2("real.txt"))
+    });
+}
+
+fn benchmark_day11(group: &mut Group) {
+    group.bench_function("d11_p1", |bencher| {
+        bencher.iter(|| day11::part1("real.txt"))
+    });
+    group.bench_function("d11_p2", |bencher| {
+        bencher.iter(|| day11::part2("real.txt"))
+    });
+}
+
+fn benchmark_day10(group: &mut Group) {
+    group.bench_function("d10_p1", |bencher| {
+        bencher.iter(|| day10::part1("real.txt"))
+    });
+    group.bench_function("d10_p2", |bencher| {
+        bencher.iter(|| day10::part2("real.txt"))
+    });
+}
+
+fn benchmark_day09(group: &mut Group) {
+    group.bench_function("d09_p1", |bencher| {
+        bencher.iter(|| day09::part1("real.txt"))
+    });
+    group.bench_function("d09_p2", |bencher| {
+        bencher.iter(|| day09::part2("real.txt"))
+    });
+}
+
+fn benchmark_day08(group: &mut Group) {
+    group.bench_function("d08_p1", |bencher| {
+        bencher.iter(|| day08::part1("real.txt"))
+    });
+    group.bench_function("d08_p2", |bencher| {
+        bencher.iter(|| day08::part2("real.txt"))
+    });
+}
+
+fn benchmark_day07(group: &mut Group) {
+    group.bench_function("d07_p1", |bencher| {
+        bencher.iter(|| day07::part1("real.txt"))
+    });
+    group.bench_function("d07_p2", |bencher| {
+        bencher.iter(|| day07::part2("real.txt"))
+    });
+}
+
+fn benchmark_day06(group: &mut Group) {
+    group.bench_function("d06_p1", |bencher| {
+        bencher.iter(|| day06::part1("real.txt"))
+    });
+    group.bench_function("d06_p2", |bencher| {
+        bencher.iter(|| day06::part2("real.txt"))
+    });
+}
+
+fn benchmark_day05(group: &mut Group) {
+    group.bench_function("d05_p1", |bencher| {
+        bencher.iter(|| day05::part1("real.txt"))
+    });
+    group.bench_function("d05_p2", |bencher| {
+        bencher.iter(|| day05::part2("real.txt"))
+    });
+}
+
+fn benchmark_day04(group: &mut Group) {
+    group.bench_function("d04_p1", |bencher| {
+        bencher.iter(|| day04::part1("real.txt"))
+    });
+    group.bench_function("d04_p2", |bencher| {
+        bencher.iter(|| day04::part2("real.txt"))
+    });
+}
+
+fn benchmark_day03(group: &mut Group) {
     let input = &utils::read_file("day03", "real.txt");
     group.bench_function("d03_p1", |bencher| {
         bencher.iter(|| day03::part1_with_input(input))
@@ -77,7 +167,7 @@ fn benchmark_day03(group: &mut BenchmarkGroup<WallTime>) {
     });
 }
 
-fn benchmark_day02(group: &mut BenchmarkGroup<WallTime>) {
+fn benchmark_day02(group: &mut Group) {
     let input = &utils::read_file("day02", "real.txt");
     group.bench_function("d02_p1", |bencher| {
         bencher.iter(|| day02::part1_with_input(input))
@@ -87,7 +177,7 @@ fn benchmark_day02(group: &mut BenchmarkGroup<WallTime>) {
     });
 }
 
-fn benchmark_day01(group: &mut BenchmarkGroup<WallTime>) {
+fn benchmark_day01(group: &mut Group) {
     let input = &utils::read_file("day01", "real.txt");
     group.bench_function("d01_p1", |bencher| {
         bencher.iter(|| day01::part1_with_input(input))
