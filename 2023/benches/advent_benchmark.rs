@@ -15,6 +15,7 @@ use advent2023::day12;
 use advent2023::day13;
 use advent2023::day14;
 use advent2023::day15;
+use advent2023::day16;
 
 use advent2023::utils;
 
@@ -27,6 +28,7 @@ fn benchmark_all(c: &mut Criterion) {
     group.sample_size(20);
     group.warm_up_time(Duration::from_millis(100));
 
+    benchmark_day16(&mut group);
     benchmark_day15(&mut group);
     benchmark_day14(&mut group);
     benchmark_day13(&mut group);
@@ -47,6 +49,16 @@ fn benchmark_all(c: &mut Criterion) {
 }
 
 type Group<'a> = BenchmarkGroup<'a, WallTime>;
+
+fn benchmark_day16(group: &mut Group) {
+    let input = &utils::read_file("day16", "real.txt");
+    group.bench_function("d16_p1", |bencher| {
+        bencher.iter(|| day16::part1_with_input(input))
+    });
+    group.bench_function("d16_p2", |bencher| {
+        bencher.iter(|| day16::part2_with_input(input))
+    });
+}
 
 fn benchmark_day15(group: &mut Group) {
     let input = &utils::read_file("day15", "real.txt");

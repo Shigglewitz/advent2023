@@ -13,6 +13,7 @@ use advent2023::day12;
 use advent2023::day13;
 use advent2023::day14;
 use advent2023::day15;
+use advent2023::day16;
 
 fn main() {
     println!("Hello, world!");
@@ -93,6 +94,11 @@ fn main() {
         id: "15",
         part1: || day15::part1("real.txt").to_string(),
         part2: || day15::part2("real.txt").to_string(),
+    });
+    days.push(Day {
+        id: "16",
+        part1: || day16::part1("real.txt").to_string(),
+        part2: || day16::part2("real.txt").to_string(),
     });
     for (index, day) in days.iter().rev().enumerate() {
         if index == 0 {
