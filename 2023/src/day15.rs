@@ -2,11 +2,19 @@ use crate::utils;
 
 pub fn part1(file_name: &str) -> usize {
     let input = utils::read_file("day15", file_name);
+    return part1_with_input(&input);
+}
+
+pub fn part1_with_input(input: &str) -> usize {
     return input.split(",").map(holiday_ascii_string_helper).sum();
 }
 
 pub fn part2(file_name: &str) -> usize {
     let input = utils::read_file("day15", file_name);
+    return part2_with_input(&input);
+}
+
+pub fn part2_with_input(input: &str) -> usize {
     let lens_boxes = LensBox::manual_arrangement_procedure(&input);
     return lens_boxes
         .iter()
@@ -42,7 +50,8 @@ impl LensBox {
         let commands = input.split(",");
         for command in commands {
             if command.ends_with("-") {
-                let label = command.trim_end_matches("-");
+                // drop the '-' at the end
+                let label = &command[0..(command.len() - 1)];
                 let box_index = holiday_ascii_string_helper(label);
                 boxes[box_index].remove_lens(label);
             } else {
@@ -56,38 +65,33 @@ impl LensBox {
     }
 
     fn remove_lens(&mut self, label: &str) {
-        let mut lens_index = usize::MAX;
-        let num_lenses = self.lenses.len();
-        let label_string = label.to_string();
-        for index in 0..num_lenses {
-            if self.lenses[index].label == label_string {
-                lens_index = index;
-                break;
-            }
-        }
-        if lens_index != usize::MAX {
+        let lens_index_option = self
+            .lenses
+            .iter()
+            .enumerate()
+            .filter(|(_, lens)| &lens.label == label)
+            .map(|(index, _)| index)
+            .next();
+        if let Some(lens_index) = lens_index_option {
             self.lenses.remove(lens_index);
         }
     }
 
     fn add_lens(&mut self, label: &str, focal_length: usize) {
-        let mut lens_index = usize::MAX;
-        let num_lenses = self.lenses.len();
-        let label_string = label.to_string();
-        for index in 0..num_lenses {
-            if self.lenses[index].label == label_string {
-                lens_index = index;
-                break;
-            }
-        }
-        if lens_index == usize::MAX {
-            self.lenses.push(Lens {
-                label: label_string,
+        let lens_index_option = self
+            .lenses
+            .iter()
+            .enumerate()
+            .filter(|(_, lens)| &lens.label == label)
+            .map(|(index, _)| index)
+            .next();
+        match lens_index_option {
+            Some(lens_index) => self.lenses[lens_index].focal_length = focal_length,
+            None => self.lenses.push(Lens {
+                label: label.to_string(),
                 focal_length,
-            });
-        } else {
-            self.lenses[lens_index].focal_length = focal_length;
-        }
+            }),
+        };
     }
 
     fn calculate_focusing_power(&self, index: usize) -> usize {

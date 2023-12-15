@@ -14,6 +14,9 @@ use advent2023::day11;
 use advent2023::day12;
 use advent2023::day13;
 use advent2023::day14;
+use advent2023::day15;
+
+use advent2023::utils;
 
 use criterion::{criterion_group, criterion_main, Criterion};
 
@@ -24,6 +27,13 @@ fn benchmark_all(c: &mut Criterion) {
 
     let file_name = "real.txt";
 
+    let day15_input = &utils::read_file("day15", "real.txt");
+    group.bench_function("d15_p1", |bencher| {
+        bencher.iter(|| day15::part1_with_input(day15_input))
+    });
+    group.bench_function("d15_p2", |bencher| {
+        bencher.iter(|| day15::part2_with_input(day15_input))
+    });
     group.bench_function("d14_p1", |bencher| bencher.iter(|| day14::part1(file_name)));
     group.bench_function("d14_p2", |bencher| bencher.iter(|| day14::part2(file_name)));
     group.bench_function("d13_p1", |bencher| bencher.iter(|| day13::part1(file_name)));
