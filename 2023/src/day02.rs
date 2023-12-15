@@ -1,11 +1,26 @@
 use crate::utils;
 
 pub fn part1(file_name: &str) -> i32 {
-    return sum_possible_games(file_name);
+    let input = utils::read_file("day02", file_name);
+    return part1_with_input(&input);
+}
+
+pub fn part1_with_input(input: &str) -> i32 {
+    return input
+        .lines()
+        .map(parse_game)
+        .filter(is_possible)
+        .map(|game| game.id)
+        .sum();
 }
 
 pub fn part2(file_name: &str) -> i32 {
-    return sum_game_powers(file_name);
+    let input = utils::read_file("day02", file_name);
+    return part2_with_input(&input);
+}
+
+pub fn part2_with_input(input: &str) -> i32 {
+    return input.lines().map(parse_game).map(find_game_power).sum();
 }
 
 const EXAMPLE_OBSERVATION: Observation = Observation {
@@ -23,11 +38,6 @@ struct Observation {
 struct Game {
     id: i32,
     observations: Vec<Observation>,
-}
-
-fn sum_game_powers(file_name: &str) -> i32 {
-    let input = utils::read_file("day02", file_name);
-    return input.lines().map(parse_game).map(find_game_power).sum();
 }
 
 fn find_game_power(game: Game) -> i32 {
@@ -48,16 +58,6 @@ fn find_game_power(game: Game) -> i32 {
     }
 
     return max_red * max_green * max_blue;
-}
-
-fn sum_possible_games(file_name: &str) -> i32 {
-    let input = utils::read_file("day02", file_name);
-    return input
-        .lines()
-        .map(parse_game)
-        .filter(is_possible)
-        .map(|game| game.id)
-        .sum();
 }
 
 fn is_possible(round: &Game) -> bool {
@@ -132,8 +132,8 @@ mod tests {
     }
 
     #[test]
-    fn sum_game_powers_works() {
-        let actual = sum_game_powers("test.txt");
+    fn part2_works() {
+        let actual = part2("test.txt");
 
         assert_eq!(2286, actual);
     }

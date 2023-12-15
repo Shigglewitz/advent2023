@@ -2,8 +2,11 @@ use crate::utils;
 use std::cmp;
 
 pub fn part1(file_name: &str) -> i32 {
-    let input = utils::read_file("day03", file_name);
+    let input = &utils::read_file("day03", file_name);
+    return part1_with_input(input);
+}
 
+pub fn part1_with_input(input: &str) -> i32 {
     let schematic = get_schematic(input);
 
     return schematic
@@ -15,8 +18,11 @@ pub fn part1(file_name: &str) -> i32 {
 }
 
 pub fn part2(file_name: &str) -> i32 {
-    let input = utils::read_file("day03", file_name);
+    let input = &utils::read_file("day03", file_name);
+    return part2_with_input(input);
+}
 
+pub fn part2_with_input(input: &str) -> i32 {
     let schematic = get_schematic(input);
 
     return schematic
@@ -141,7 +147,7 @@ fn contains_special_char(input: &str) -> bool {
     return false;
 }
 
-fn get_schematic(input: String) -> Schematic {
+fn get_schematic(input: &str) -> Schematic {
     let mut lines = Vec::new();
     let mut parts = Vec::new();
     let mut gears = Vec::new();
@@ -207,7 +213,7 @@ mod tests {
     use rstest::rstest;
 
     fn test_schematic() -> Schematic {
-        return get_schematic(utils::read_file("day03", "test.txt"));
+        return get_schematic(&utils::read_file("day03", "test.txt"));
     }
 
     #[test]

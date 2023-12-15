@@ -18,6 +18,8 @@ use advent2023::day15;
 
 use advent2023::utils;
 
+use criterion::measurement::WallTime;
+use criterion::BenchmarkGroup;
 use criterion::{criterion_group, criterion_main, Criterion};
 
 fn benchmark_all(c: &mut Criterion) {
@@ -58,12 +60,41 @@ fn benchmark_all(c: &mut Criterion) {
     group.bench_function("d04_p2", |bencher| bencher.iter(|| day04::part2(file_name)));
     group.bench_function("d03_p1", |bencher| bencher.iter(|| day03::part1(file_name)));
     group.bench_function("d03_p2", |bencher| bencher.iter(|| day03::part2(file_name)));
-    group.bench_function("d02_p1", |bencher| bencher.iter(|| day02::part1(file_name)));
-    group.bench_function("d02_p2", |bencher| bencher.iter(|| day02::part2(file_name)));
-    group.bench_function("d01_p1", |bencher| bencher.iter(|| day01::part1(file_name)));
-    group.bench_function("d01_p2", |bencher| bencher.iter(|| day01::part2(file_name)));
+    benchmark_day03(&mut group);
+    benchmark_day02(&mut group);
+    benchmark_day01(&mut group);
 
     group.finish();
+}
+
+fn benchmark_day03(group: &mut BenchmarkGroup<WallTime>) {
+    let input = &utils::read_file("day03", "real.txt");
+    group.bench_function("d03_p1", |bencher| {
+        bencher.iter(|| day03::part1_with_input(input))
+    });
+    group.bench_function("d03_p2", |bencher| {
+        bencher.iter(|| day03::part2_with_input(input))
+    });
+}
+
+fn benchmark_day02(group: &mut BenchmarkGroup<WallTime>) {
+    let input = &utils::read_file("day02", "real.txt");
+    group.bench_function("d02_p1", |bencher| {
+        bencher.iter(|| day02::part1_with_input(input))
+    });
+    group.bench_function("d02_p2", |bencher| {
+        bencher.iter(|| day02::part2_with_input(input))
+    });
+}
+
+fn benchmark_day01(group: &mut BenchmarkGroup<WallTime>) {
+    let input = &utils::read_file("day01", "real.txt");
+    group.bench_function("d01_p1", |bencher| {
+        bencher.iter(|| day01::part1_with_input(input))
+    });
+    group.bench_function("d01_p2", |bencher| {
+        bencher.iter(|| day01::part2_with_input(input))
+    });
 }
 
 criterion_group!(benches, benchmark_all);
