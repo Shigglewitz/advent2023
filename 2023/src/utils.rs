@@ -11,17 +11,21 @@ pub fn read_file(folder_name: &str, file_name: &str) -> String {
 
     return contents;
 }
+#[cfg(test)]
+mod test {
+    use super::*;
 
-#[test]
-fn read_file_works() {
-    let expected: String = "1abc2
+    #[test]
+    fn read_file_works() {
+        let expected: String = "1abc2
 pqr3stu8vwx
 a1b2c3d4e5f
 treb7uchet"
-        .lines()
-        .collect();
+            .lines()
+            .collect();
 
-    let actual: String = read_file("day01", "test_1.txt").lines().collect();
+        let actual: String = read_file("day01", "test_1.txt").lines().collect();
 
-    assert_eq!(expected, actual);
+        assert_eq!(expected, actual);
+    }
 }

@@ -9,3 +9,10 @@ edition = "2021"
 num = "0.4.1"
 rayon = "1.8.0"
 rstest = "0.18.2"
+
+[dev-dependencies]
+criterion = "0.5.1"
+
+[[bench]]
+name = "advent_benchmark"
+harness = false

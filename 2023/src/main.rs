@@ -1,19 +1,18 @@
-mod day01;
-mod day02;
-mod day03;
-mod day04;
-mod day05;
-mod day06;
-mod day07;
-mod day08;
-mod day09;
-mod day10;
-mod day11;
-mod day12;
-mod day13;
-mod day14;
-mod day15;
-mod utils;
+use advent2023::day01;
+use advent2023::day02;
+use advent2023::day03;
+use advent2023::day04;
+use advent2023::day05;
+use advent2023::day06;
+use advent2023::day07;
+use advent2023::day08;
+use advent2023::day09;
+use advent2023::day10;
+use advent2023::day11;
+use advent2023::day12;
+use advent2023::day13;
+use advent2023::day14;
+use advent2023::day15;
 
 fn main() {
     println!("Hello, world!");
