@@ -1,3 +1,4 @@
+use rayon::prelude::*;
 use std::collections::HashSet;
 
 use crate::utils;
@@ -20,45 +21,27 @@ pub fn part2(file_name: &str) -> i32 {
 }
 
 pub fn part2_with_input(input: &str) -> i32 {
-    let mut contraption = Contraption::parse(input);
-    let mut max = 0;
+    let contraption = Contraption::parse(input);
+    let mut starts: Vec<(usize, usize, Direction)> = Vec::new();
     for index in 0..contraption.width {
-        contraption.add_start(index, 0, Direction::DOWN);
-        contraption.trace_light();
-        let energized = contraption.count_energized_tiles();
-        if energized > max {
-            max = energized;
-        }
-        contraption.reset();
+        starts.push((index, 0, Direction::DOWN));
+        starts.push((index, contraption.height - 1, Direction::UP));
     }
     for index in 0..contraption.height {
-        contraption.add_start(contraption.width - 1, index, Direction::LEFT);
-        contraption.trace_light();
-        let energized = contraption.count_energized_tiles();
-        if energized > max {
-            max = energized;
-        }
-        contraption.reset();
+        starts.push((contraption.width - 1, index, Direction::LEFT));
+        starts.push((0, index, Direction::RIGHT));
     }
-    for index in 0..contraption.width {
-        contraption.add_start(index, contraption.height - 1, Direction::UP);
-        contraption.trace_light();
-        let energized = contraption.count_energized_tiles();
-        if energized > max {
-            max = energized;
-        }
-        contraption.reset();
-    }
-    for index in 0..contraption.height {
-        contraption.add_start(0, index, Direction::RIGHT);
-        contraption.trace_light();
-        let energized = contraption.count_energized_tiles();
-        if energized > max {
-            max = energized;
-        }
-        contraption.reset();
-    }
-    return max;
+
+    return starts
+        .par_iter()
+        .map(|start| {
+            let mut this_contraption = contraption.clone();
+            this_contraption.add_start(start.0, start.1, start.2.clone());
+            this_contraption.trace_light();
+            this_contraption.count_energized_tiles()
+        })
+        .max()
+        .unwrap();
 }
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
@@ -69,6 +52,7 @@ enum Direction {
     DOWN,
 }
 
+#[derive(Clone)]
 struct RayOfLight {
     direction: Direction,
     x: usize,
@@ -76,6 +60,7 @@ struct RayOfLight {
     completed: bool,
 }
 
+#[derive(Clone)]
 struct Contraption {
     tiles: Vec<Vec<u8>>,
     energized_tiles: Vec<Vec<bool>>,
@@ -108,15 +93,10 @@ impl Contraption {
     fn add_start(&mut self, x: usize, y: usize, direction: Direction) {
         self.rays.push(RayOfLight {
             direction,
-                x,
-                y,
-                completed: false,
+            x,
+            y,
+            completed: false,
         });
-    }
-
-    fn reset(&mut self) {
-        self.rays.clear();
-        self.energized_tiles = vec![vec![false; self.width]; self.height];
     }
 
     fn trace_light(&mut self) {
@@ -245,32 +225,6 @@ impl Contraption {
         });
 
         return sum;
-    }
-
-    #[allow(dead_code)]
-    fn energized_picture(&self) -> String {
-        let mut result: Vec<Vec<u8>> = Vec::new();
-
-        for read_row in self.energized_tiles.iter() {
-            let mut write_row: Vec<u8> = Vec::new();
-            for &is_energized in read_row.iter() {
-                if is_energized {
-                    write_row.push(b'#');
-                } else {
-                    write_row.push(b'.');
-                }
-            }
-            result.push(write_row);
-        }
-
-        return result
-            .iter()
-            .map(|row| String::from_utf8(row.clone()).unwrap())
-            .collect::<Vec<String>>()
-            .join(
-                "
-",
-            );
     }
 }
 #[cfg(test)]

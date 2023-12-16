@@ -13,7 +13,6 @@ pub fn part1(file_name: &str) -> usize {
         .sum();
 }
 
-#[allow(dead_code)]
 pub fn part2(file_name: &str) -> usize {
     let input = utils::read_file("day12", file_name);
 
