@@ -104,19 +104,17 @@ impl Contraption {
         while !self.rays.is_empty() {
             let num_rays = self.rays.len();
             for index in 0..num_rays {
-                let key = (
-                    self.rays[index].x,
-                    self.rays[index].y,
-                    self.rays[index].direction.clone(),
-                );
-                if processed_light.get(&key).is_some() {
-                    self.rays[index].completed = true;
-                    continue;
-                } else {
-                    processed_light.insert(key);
-                }
                 let ray_x = self.rays[index].x;
                 let ray_y = self.rays[index].y;
+                if self.tiles[ray_y][ray_x] != b'.' {
+                    let key = (ray_x, ray_y, self.rays[index].direction.clone());
+                    if processed_light.get(&key).is_some() {
+                        self.rays[index].completed = true;
+                        continue;
+                    } else {
+                        processed_light.insert(key);
+                    }
+                }
                 self.energized_tiles[ray_y][ray_x] = true;
 
                 match self.tiles[ray_y][ray_x] {
