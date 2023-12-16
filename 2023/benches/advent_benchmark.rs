@@ -1,21 +1,6 @@
 use std::time::Duration;
 
-use advent2023::day01;
-use advent2023::day02;
-use advent2023::day03;
-use advent2023::day04;
-use advent2023::day05;
-use advent2023::day06;
-use advent2023::day07;
-use advent2023::day08;
-use advent2023::day09;
-use advent2023::day10;
-use advent2023::day11;
-use advent2023::day12;
-use advent2023::day13;
-use advent2023::day14;
-use advent2023::day15;
-use advent2023::day16;
+use advent2023::*;
 
 use advent2023::utils;
 
@@ -28,6 +13,7 @@ fn benchmark_all(c: &mut Criterion) {
     group.sample_size(20);
     group.warm_up_time(Duration::from_millis(100));
 
+    benchmark_day17(&mut group);
     benchmark_day16(&mut group);
     benchmark_day15(&mut group);
     benchmark_day14(&mut group);
@@ -49,6 +35,16 @@ fn benchmark_all(c: &mut Criterion) {
 }
 
 type Group<'a> = BenchmarkGroup<'a, WallTime>;
+
+fn benchmark_day17(group: &mut Group) {
+    let input = &utils::read_file("day17", "real.txt");
+    group.bench_function("d17_p1", |bencher| {
+        bencher.iter(|| day17::part1_with_input(input))
+    });
+    group.bench_function("d17_p2", |bencher| {
+        bencher.iter(|| day17::part2_with_input(input))
+    });
+}
 
 fn benchmark_day16(group: &mut Group) {
     let input = &utils::read_file("day16", "real.txt");

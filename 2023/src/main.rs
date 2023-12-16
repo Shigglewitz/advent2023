@@ -1,19 +1,4 @@
-use advent2023::day01;
-use advent2023::day02;
-use advent2023::day03;
-use advent2023::day04;
-use advent2023::day05;
-use advent2023::day06;
-use advent2023::day07;
-use advent2023::day08;
-use advent2023::day09;
-use advent2023::day10;
-use advent2023::day11;
-use advent2023::day12;
-use advent2023::day13;
-use advent2023::day14;
-use advent2023::day15;
-use advent2023::day16;
+use advent2023::*;
 
 fn main() {
     println!("Hello, world!");
@@ -99,6 +84,11 @@ fn main() {
         id: "16",
         part1: || day16::part1("real.txt").to_string(),
         part2: || day16::part2("real.txt").to_string(),
+    });
+    days.push(Day {
+        id: "17",
+        part1: || day17::part1("real.txt").to_string(),
+        part2: || day17::part2("real.txt").to_string(),
     });
     for (index, day) in days.iter().rev().enumerate() {
         if index == 0 {
