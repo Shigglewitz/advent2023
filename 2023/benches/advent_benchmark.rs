@@ -2,8 +2,6 @@ use std::time::Duration;
 
 use advent2023::*;
 
-use advent2023::utils;
-
 use criterion::measurement::WallTime;
 use criterion::BenchmarkGroup;
 use criterion::{criterion_group, criterion_main, Criterion};
@@ -13,6 +11,7 @@ fn benchmark_all(c: &mut Criterion) {
     group.sample_size(20);
     group.warm_up_time(Duration::from_millis(100));
 
+    benchmark_day(&mut group, &day18::create("real.txt"));
     benchmark_day(&mut group, &day17::create("real.txt"));
     benchmark_day(&mut group, &day16::create("real.txt"));
     benchmark_day(&mut group, &day15::create("real.txt"));

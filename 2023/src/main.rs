@@ -21,6 +21,7 @@ fn main() {
     advent_days.push(day15::create("real.txt"));
     advent_days.push(day16::create("real.txt"));
     advent_days.push(day17::create("real.txt"));
+    advent_days.push(day18::create("real.txt"));
 
     for (index, day) in advent_days.iter().rev().enumerate() {
         if index == 0 {
