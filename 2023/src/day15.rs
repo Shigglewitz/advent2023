@@ -1,20 +1,12 @@
-use crate::utils;
+use crate::create_advent_day;
 
-pub fn part1(file_name: &str) -> usize {
-    let input = utils::read_file("day15", file_name);
-    return part1_with_input(&input);
-}
+create_advent_day!("15");
 
-pub fn part1_with_input(input: &str) -> usize {
+fn part1_with_input(input: &str) -> usize {
     return input.split(",").map(holiday_ascii_string_helper).sum();
 }
 
-pub fn part2(file_name: &str) -> usize {
-    let input = utils::read_file("day15", file_name);
-    return part2_with_input(&input);
-}
-
-pub fn part2_with_input(input: &str) -> usize {
+fn part2_with_input(input: &str) -> usize {
     let lens_boxes = LensBox::manual_arrangement_procedure(&input);
     return lens_boxes
         .iter()
@@ -121,16 +113,16 @@ mod test {
 
     #[test]
     fn part1_works() {
-        let actual = part1("test.txt");
+        let actual = create("test.txt").solve_part1();
 
-        assert_eq!(actual, 1320);
+        assert_eq!(&actual, "1320");
     }
 
     #[test]
     fn part2_works() {
-        let actual = part2("test.txt");
+        let actual = create("test.txt").solve_part2();
 
-        assert_eq!(actual, 145);
+        assert_eq!(&actual, "145");
     }
 
     #[rstest]

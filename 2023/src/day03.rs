@@ -1,12 +1,9 @@
-use crate::utils;
+use crate::create_advent_day;
 use std::cmp;
 
-pub fn part1(file_name: &str) -> i32 {
-    let input = &utils::read_file("day03", file_name);
-    return part1_with_input(input);
-}
+create_advent_day!("03");
 
-pub fn part1_with_input(input: &str) -> i32 {
+fn part1_with_input(input: &str) -> i32 {
     let schematic = get_schematic(input);
 
     return schematic
@@ -17,12 +14,7 @@ pub fn part1_with_input(input: &str) -> i32 {
         .sum();
 }
 
-pub fn part2(file_name: &str) -> i32 {
-    let input = &utils::read_file("day03", file_name);
-    return part2_with_input(input);
-}
-
-pub fn part2_with_input(input: &str) -> i32 {
+fn part2_with_input(input: &str) -> i32 {
     let schematic = get_schematic(input);
 
     return schematic
@@ -218,16 +210,16 @@ mod tests {
 
     #[test]
     fn part1_works() {
-        let actual = part1("test.txt");
+        let actual = create("test.txt").solve_part1();
 
-        assert_eq!(actual, 4361);
+        assert_eq!(&actual, "4361");
     }
 
     #[test]
     fn part2_works() {
-        let actual = part2("test.txt");
+        let actual = create("test.txt").solve_part2();
 
-        assert_eq!(actual, 467835);
+        assert_eq!(&actual, "467835");
     }
 
     #[rstest]

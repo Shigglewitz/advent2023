@@ -1,16 +1,14 @@
-use crate::utils;
+use crate::create_advent_day;
 
-pub fn part1(file_name: &str) -> i32 {
-    let input = utils::read_file("day09", file_name);
+create_advent_day!("09");
 
+fn part1_with_input(input: &str) -> i32 {
     let histories: Vec<History> = input.lines().map(History::parse).collect();
 
     return histories.iter().map(History::next_value).sum();
 }
 
-pub fn part2(file_name: &str) -> i32 {
-    let input = utils::read_file("day09", file_name);
-
+fn part2_with_input(input: &str) -> i32 {
     let histories: Vec<History> = input.lines().map(History::parse).collect();
 
     return histories.iter().map(History::previous_value).sum();
@@ -73,16 +71,16 @@ mod test {
 
     #[test]
     fn part1_works() {
-        let actual = part1("test.txt");
+        let actual = create("test.txt").solve_part1();
 
-        assert_eq!(actual, 114);
+        assert_eq!(&actual, "114");
     }
 
     #[test]
     fn part2_works() {
-        let actual = part2("test.txt");
+        let actual = create("test.txt").solve_part2();
 
-        assert_eq!(actual, 2);
+        assert_eq!(&actual, "2");
     }
 
     #[test]

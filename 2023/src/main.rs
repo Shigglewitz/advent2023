@@ -3,116 +3,41 @@ use advent2023::*;
 fn main() {
     println!("Hello, world!");
 
-    let mut days = Vec::new();
-    days.push(Day {
-        id: "01",
-        part1: || day01::part1("real.txt").to_string(),
-        part2: || day01::part2("real.txt").to_string(),
-    });
-    days.push(Day {
-        id: "02",
-        part1: || day02::part1("real.txt").to_string(),
-        part2: || day02::part2("real.txt").to_string(),
-    });
-    days.push(Day {
-        id: "03",
-        part1: || day03::part1("real.txt").to_string(),
-        part2: || day03::part2("real.txt").to_string(),
-    });
-    days.push(Day {
-        id: "04",
-        part1: || day04::part1("real.txt").to_string(),
-        part2: || day04::part2("real.txt").to_string(),
-    });
-    days.push(Day {
-        id: "05",
-        part1: || day05::part1("real.txt").to_string(),
-        part2: || day05::part2("real.txt").to_string(),
-    });
-    days.push(Day {
-        id: "06",
-        part1: || day06::part1("real.txt").to_string(),
-        part2: || day06::part2("real.txt").to_string(),
-    });
-    days.push(Day {
-        id: "07",
-        part1: || day07::part1("real.txt").to_string(),
-        part2: || day07::part2("real.txt").to_string(),
-    });
-    days.push(Day {
-        id: "08",
-        part1: || day08::part1("real.txt").to_string(),
-        part2: || day08::part2("real.txt").to_string(),
-    });
-    days.push(Day {
-        id: "09",
-        part1: || day09::part1("real.txt").to_string(),
-        part2: || day09::part2("real.txt").to_string(),
-    });
-    days.push(Day {
-        id: "10",
-        part1: || day10::part1("real.txt").to_string(),
-        part2: || day10::part2("real.txt").to_string(),
-    });
-    days.push(Day {
-        id: "11",
-        part1: || day11::part1("real.txt").to_string(),
-        part2: || day11::part2("real.txt").to_string(),
-    });
-    days.push(Day {
-        id: "12",
-        part1: || day12::part1("real.txt").to_string(),
-        // part 2 is too slow and needs more optimization
-        part2: || day12::part2("real.txt").to_string(),
-    });
-    days.push(Day {
-        id: "13",
-        part1: || day13::part1("real.txt").to_string(),
-        part2: || day13::part2("real.txt").to_string(),
-    });
-    days.push(Day {
-        id: "14",
-        part1: || day14::part1("real.txt").to_string(),
-        part2: || day14::part2("real.txt").to_string(),
-    });
-    days.push(Day {
-        id: "15",
-        part1: || day15::part1("real.txt").to_string(),
-        part2: || day15::part2("real.txt").to_string(),
-    });
-    days.push(Day {
-        id: "16",
-        part1: || day16::part1("real.txt").to_string(),
-        part2: || day16::part2("real.txt").to_string(),
-    });
-    days.push(Day {
-        id: "17",
-        part1: || day17::part1("real.txt").to_string(),
-        part2: || day17::part2("real.txt").to_string(),
-    });
-    for (index, day) in days.iter().rev().enumerate() {
+    let mut advent_days: Vec<AdventDay> = Vec::new();
+    advent_days.push(day01::create("real.txt"));
+    advent_days.push(day02::create("real.txt"));
+    advent_days.push(day03::create("real.txt"));
+    advent_days.push(day04::create("real.txt"));
+    advent_days.push(day05::create("real.txt"));
+    advent_days.push(day06::create("real.txt"));
+    advent_days.push(day07::create("real.txt"));
+    advent_days.push(day08::create("real.txt"));
+    advent_days.push(day09::create("real.txt"));
+    advent_days.push(day10::create("real.txt"));
+    advent_days.push(day11::create("real.txt"));
+    advent_days.push(day12::create("real.txt"));
+    advent_days.push(day13::create("real.txt"));
+    advent_days.push(day14::create("real.txt"));
+    advent_days.push(day15::create("real.txt"));
+    advent_days.push(day16::create("real.txt"));
+    advent_days.push(day17::create("real.txt"));
+
+    for (index, day) in advent_days.iter().rev().enumerate() {
         if index == 0 {
             println!("┌────────┐");
         } else {
             println!("├────────┤");
         }
-        print_day_struct(day);
+        print_advent_day(day);
     }
     println!("└────────┘");
 
     println!("Farewell, world!");
 }
 
-struct Day {
-    id: &'static str,
-    part1: fn() -> String,
-    part2: fn() -> String,
-}
-
-// get more weird ascii art chars from here https://theasciicode.com.ar/extended-ascii-code/box-drawings-single-vertical-line-character-ascii-code-179.html
-fn print_day_struct(day: &Day) {
+fn print_advent_day(day: &AdventDay) {
     println!("│ Day {} │", day.id);
     println!("├────────┤");
-    println!("│ Part 1 │ {}", (day.part1)().to_string());
-    println!("│ Part 2 │ {}", (day.part2)().to_string());
+    println!("│ Part 1 │ {}", day.solve_part1());
+    println!("│ Part 2 │ {}", day.solve_part2());
 }

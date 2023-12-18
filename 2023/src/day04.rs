@@ -1,8 +1,8 @@
-use crate::utils;
+use crate::create_advent_day;
 
-pub fn part1(file_name: &str) -> i32 {
-    let input = utils::read_file("day04", file_name);
+create_advent_day!("04");
 
+fn part1_with_input(input: &str) -> i32 {
     return input
         .lines()
         .map(Card::from)
@@ -10,9 +10,7 @@ pub fn part1(file_name: &str) -> i32 {
         .sum();
 }
 
-pub fn part2(file_name: &str) -> i32 {
-    let input = utils::read_file("day04", file_name);
-
+fn part2_with_input(input: &str) -> i32 {
     let mut cards: Vec<Card> = input.lines().map(Card::from).collect();
 
     let num_cards = cards.len();
@@ -92,16 +90,16 @@ mod tests {
 
     #[test]
     fn part1_works() {
-        let actual = part1("test.txt");
+        let actual = create("test.txt").solve_part1();
 
-        assert_eq!(actual, 13);
+        assert_eq!(&actual, "13");
     }
 
     #[test]
     fn part2_works() {
-        let actual = part2("test.txt");
+        let actual = create("test.txt").solve_part2();
 
-        assert_eq!(actual, 30);
+        assert_eq!(&actual, "30");
     }
 
     #[test]

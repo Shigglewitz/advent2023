@@ -1,25 +1,15 @@
-use crate::utils;
+use crate::create_advent_day;
 
-pub fn part1(file_name: &str) -> i32 {
-    let input = utils::read_file("day17", file_name);
+create_advent_day!("17");
 
-    let city_map = CityMap::parse(&input);
+fn part1_with_input(input: &str) -> i32 {
+    let city_map = CityMap::parse(input);
     let _heat_loss_len = city_map.heat_loss.len();
 
-    return part1_with_input(&input);
-}
-
-pub fn part1_with_input(input: &str) -> i32 {
     return input.len() as i32;
 }
 
-pub fn part2(file_name: &str) -> i32 {
-    let input = utils::read_file("day17", file_name);
-
-    return part2_with_input(&input);
-}
-
-pub fn part2_with_input(input: &str) -> i32 {
+fn part2_with_input(input: &str) -> i32 {
     return input.len() as i32;
 }
 
@@ -45,16 +35,16 @@ mod test {
 
     #[test]
     fn part1_works() {
-        let actual = part1("test.txt");
+        let actual = create("test.txt").solve_part1();
 
-        assert_eq!(actual, 193);
+        assert_eq!(&actual, "193");
     }
 
     #[test]
     fn part2_works() {
-        let actual = part2("test.txt");
+        let actual = create("test.txt").solve_part2();
 
-        assert_eq!(actual, 193);
+        assert_eq!(&actual, "193");
     }
 
     #[rstest]

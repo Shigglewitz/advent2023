@@ -1,11 +1,8 @@
-use crate::utils;
+use crate::create_advent_day;
 
-pub fn part1(file_name: &str) -> i32 {
-    let input = utils::read_file("day01", file_name);
-    return part1_with_input(&input);
-}
+create_advent_day!("01");
 
-pub fn part1_with_input(input: &str) -> i32 {
+fn part1_with_input(input: &str) -> i32 {
     let total: i32 = input
         .lines()
         .map(&str::to_string)
@@ -15,12 +12,7 @@ pub fn part1_with_input(input: &str) -> i32 {
     return total;
 }
 
-pub fn part2(file_name: &str) -> i32 {
-    let input = utils::read_file("day01", file_name);
-    return part2_with_input(&input);
-}
-
-pub fn part2_with_input(input: &str) -> i32 {
+fn part2_with_input(input: &str) -> i32 {
     let total: i32 = input
         .lines()
         .map(translate_to_numeric)
@@ -74,16 +66,16 @@ mod tests {
 
     #[test]
     fn part1_works() {
-        let actual: i32 = part1("test_1.txt");
+        let actual = create("test_1.txt").solve_part1();
 
-        assert_eq!(142, actual);
+        assert_eq!("142", &actual);
     }
 
     #[test]
     fn part2_works() {
-        let actual: i32 = part2("test_2.txt");
+        let actual = create("test_2.txt").solve_part2();
 
-        assert_eq!(281, actual);
+        assert_eq!("281", &actual);
     }
 
     #[rstest]

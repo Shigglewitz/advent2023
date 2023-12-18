@@ -1,11 +1,8 @@
-use crate::utils;
+use crate::create_advent_day;
 
-pub fn part1(file_name: &str) -> i32 {
-    let input = utils::read_file("day02", file_name);
-    return part1_with_input(&input);
-}
+create_advent_day!("02");
 
-pub fn part1_with_input(input: &str) -> i32 {
+fn part1_with_input(input: &str) -> i32 {
     return input
         .lines()
         .map(parse_game)
@@ -14,12 +11,7 @@ pub fn part1_with_input(input: &str) -> i32 {
         .sum();
 }
 
-pub fn part2(file_name: &str) -> i32 {
-    let input = utils::read_file("day02", file_name);
-    return part2_with_input(&input);
-}
-
-pub fn part2_with_input(input: &str) -> i32 {
+fn part2_with_input(input: &str) -> i32 {
     return input.lines().map(parse_game).map(find_game_power).sum();
 }
 
@@ -126,16 +118,16 @@ mod tests {
 
     #[test]
     fn part1_works() {
-        let sum = part1("test.txt");
+        let sum = create("test.txt").solve_part1();
 
-        assert_eq!(8, sum);
+        assert_eq!("8", &sum);
     }
 
     #[test]
     fn part2_works() {
-        let actual = part2("test.txt");
+        let actual = create("test.txt").solve_part2();
 
-        assert_eq!(2286, actual);
+        assert_eq!("2286", &actual);
     }
 
     #[rstest]

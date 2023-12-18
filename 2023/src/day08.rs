@@ -1,18 +1,16 @@
 use std::collections::HashMap;
 
-use crate::utils;
+use crate::create_advent_day;
 use num::integer;
 
-pub fn part1(file_name: &str) -> i64 {
-    let input = utils::read_file("day08", file_name);
+create_advent_day!("08");
 
+fn part1_with_input(input: &str) -> i64 {
     let problem = Problem::parse(&input);
     return problem.solve("AAA", "ZZZ");
 }
 
-pub fn part2(file_name: &str) -> i64 {
-    let input = utils::read_file("day08", file_name);
-
+fn part2_with_input(input: &str) -> i64 {
     let problem = Problem::parse(&input);
     let current_nodes: Vec<String> = problem
         .nodes
@@ -85,23 +83,23 @@ mod test {
 
     #[test]
     fn part1_works() {
-        let actual = part1("test.txt");
+        let actual = create("test.txt").solve_part1();
 
-        assert_eq!(actual, 2);
+        assert_eq!(&actual, "2");
     }
 
     #[test]
     fn part1_second_input_works() {
-        let actual = part1("test2.txt");
+        let actual = create("test2.txt").solve_part1();
 
-        assert_eq!(actual, 6);
+        assert_eq!(&actual, "6");
     }
 
     #[test]
     fn part2_works() {
-        let actual = part2("test3.txt");
+        let actual = create("test3.txt").solve_part2();
 
-        assert_eq!(actual, 6);
+        assert_eq!(&actual, "6");
     }
 
     #[test]

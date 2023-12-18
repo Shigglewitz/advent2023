@@ -3,19 +3,17 @@ use std::{
     hash::{Hash, Hasher},
 };
 
-use crate::utils;
+use crate::create_advent_day;
 
-pub fn part1(file_name: &str) -> u64 {
-    let input = utils::read_file("day14", file_name);
+create_advent_day!("14");
 
+fn part1_with_input(input: &str) -> u64 {
     let mut platform = Platform::parse(&input);
     platform.shift_north();
     return platform.calculate_load();
 }
 
-pub fn part2(file_name: &str) -> u64 {
-    let input = utils::read_file("day14", file_name);
-
+fn part2_with_input(input: &str) -> u64 {
     let mut platform = Platform::parse(&input);
     let mut cache: HashMap<u64, usize> = HashMap::new();
     let mut hashed_state = platform.hash_state();
@@ -219,16 +217,16 @@ mod test {
 
     #[test]
     fn part1_works() {
-        let actual = part1("test.txt");
+        let actual = create("test.txt").solve_part1();
 
-        assert_eq!(actual, 136);
+        assert_eq!(&actual, "136");
     }
 
     #[test]
     fn part2_works() {
-        let actual = part2("test.txt");
+        let actual = create("test.txt").solve_part2();
 
-        assert_eq!(actual, 64);
+        assert_eq!(&actual, "64");
     }
 
     #[test]

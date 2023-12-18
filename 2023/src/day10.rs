@@ -1,8 +1,8 @@
-use crate::utils;
+use crate::create_advent_day;
 
-pub fn part1(file_name: &str) -> i32 {
-    let input = utils::read_file("day10", file_name);
+create_advent_day!("10");
 
+fn part1_with_input(input: &str) -> i32 {
     let pipe_maze = PipeMaze::parse(&input);
     let path = pipe_maze.find_path();
 
@@ -10,9 +10,7 @@ pub fn part1(file_name: &str) -> i32 {
     return (length / 2) + 1;
 }
 
-pub fn part2(file_name: &str) -> i32 {
-    let input = utils::read_file("day10", file_name);
-
+fn part2_with_input(input: &str) -> i32 {
     let pipe_maze = PipeMaze::parse(&input);
 
     return pipe_maze.shoe_lace();
@@ -251,23 +249,23 @@ mod test {
 
     #[test]
     fn part1_1_works() {
-        let actual = part1("test1.txt");
+        let actual = create("test1.txt").solve_part1();
 
-        assert_eq!(actual, 4);
+        assert_eq!(&actual, "4");
     }
 
     #[test]
     fn part1_2_works() {
-        let actual = part1("test2.txt");
+        let actual = create("test2.txt").solve_part1();
 
-        assert_eq!(actual, 8);
+        assert_eq!(&actual, "8");
     }
 
     #[test]
     fn part2_works() {
-        let actual = part2("test3.txt");
+        let actual = create("test3.txt").solve_part2();
 
-        assert_eq!(actual, 4);
+        assert_eq!(&actual, "4");
     }
 
     #[test]

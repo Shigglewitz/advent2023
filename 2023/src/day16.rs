@@ -1,26 +1,18 @@
 use rayon::prelude::*;
 use std::collections::HashSet;
 
-use crate::utils;
+use crate::create_advent_day;
 
-pub fn part1(file_name: &str) -> i32 {
-    let input = &utils::read_file("day16", file_name);
-    return part1_with_input(input);
-}
+create_advent_day!("16");
 
-pub fn part1_with_input(input: &str) -> i32 {
+fn part1_with_input(input: &str) -> i32 {
     let mut contraption = Contraption::parse(input);
     contraption.add_default_start();
     contraption.trace_light();
     return contraption.count_energized_tiles();
 }
 
-pub fn part2(file_name: &str) -> i32 {
-    let input = &utils::read_file("day16", file_name);
-    return part2_with_input(input);
-}
-
-pub fn part2_with_input(input: &str) -> i32 {
+fn part2_with_input(input: &str) -> i32 {
     let contraption = Contraption::parse(input);
     let mut starts: Vec<(usize, usize, Direction)> = Vec::new();
     for index in 0..contraption.width {
@@ -231,16 +223,16 @@ mod test {
 
     #[test]
     fn part1_works() {
-        let actual = part1("test.txt");
+        let actual = create("test.txt").solve_part1();
 
-        assert_eq!(actual, 46);
+        assert_eq!(&actual, "46");
     }
 
     #[test]
     fn part2_works() {
-        let actual = part2("test.txt");
+        let actual = create("test.txt").solve_part2();
 
-        assert_eq!(actual, 51);
+        assert_eq!(&actual, "51");
     }
 
     #[test]

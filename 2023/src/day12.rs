@@ -1,11 +1,11 @@
 use rayon::prelude::*;
 use std::collections::HashMap;
 
-use crate::utils;
+use crate::create_advent_day;
 
-pub fn part1(file_name: &str) -> usize {
-    let input = utils::read_file("day12", file_name);
+create_advent_day!("12");
 
+fn part1_with_input(input: &str) -> usize {
     return input
         .par_lines()
         .map(ConditionRecord::parse)
@@ -13,9 +13,7 @@ pub fn part1(file_name: &str) -> usize {
         .sum();
 }
 
-pub fn part2(file_name: &str) -> usize {
-    let input = utils::read_file("day12", file_name);
-
+fn part2_with_input(input: &str) -> usize {
     return input
         .par_lines()
         .map(ConditionRecord::parse)
@@ -152,16 +150,16 @@ mod test {
 
     #[test]
     fn part1_works() {
-        let actual = part1("test.txt");
+        let actual = create("test.txt").solve_part1();
 
-        assert_eq!(actual, 21);
+        assert_eq!(&actual, "21");
     }
 
     #[test]
     fn part2_works() {
-        let actual = part2("test.txt");
+        let actual = create("test.txt").solve_part2();
 
-        assert_eq!(actual, 525152);
+        assert_eq!(&actual, "525152");
     }
 
     #[test]

@@ -1,10 +1,10 @@
 use std::{cmp::Ordering, collections::HashMap};
 
-use crate::utils;
+use crate::create_advent_day;
 
-pub fn part1(file_name: &str) -> i64 {
-    let input = utils::read_file("day07", file_name);
+create_advent_day!("07");
 
+fn part1_with_input(input: &str) -> i64 {
     let mut hands: Vec<Hand> = input.lines().map(|line| Hand::parse(line, false)).collect();
     hands.sort_by(|a, b| compare_hands(a, b, false));
     return hands
@@ -14,9 +14,7 @@ pub fn part1(file_name: &str) -> i64 {
         .sum();
 }
 
-pub fn part2(file_name: &str) -> i64 {
-    let input = utils::read_file("day07", file_name);
-
+fn part2_with_input(input: &str) -> i64 {
     let mut hands: Vec<Hand> = input.lines().map(|line| Hand::parse(line, true)).collect();
     hands.sort_by(|a, b| compare_hands(a, b, true));
     return hands
@@ -147,16 +145,16 @@ mod test {
 
     #[test]
     fn part1_works() {
-        let actual = part1("test.txt");
+        let actual = create("test.txt").solve_part1();
 
-        assert_eq!(actual, 6440);
+        assert_eq!(&actual, "6440");
     }
 
     #[test]
     fn part2_works() {
-        let actual = part2("test.txt");
+        let actual = create("test.txt").solve_part2();
 
-        assert_eq!(actual, 5905);
+        assert_eq!(&actual, "5905");
     }
 
     #[test]

@@ -1,15 +1,13 @@
-use crate::utils;
+use crate::create_advent_day;
 
-pub fn part1(file_name: &str) -> i64 {
-    let input = utils::read_file("day06", file_name);
+create_advent_day!("06");
 
+fn part1_with_input(input: &str) -> i64 {
     let races = Race::parse(&input);
     return races.iter().map(Race::num_ways_to_beat).product();
 }
 
-pub fn part2(file_name: &str) -> i64 {
-    let input = utils::read_file("day06", file_name);
-
+fn part2_with_input(input: &str) -> i64 {
     let race = Race::parse_ignore_spaces(&input);
     return race.num_ways_to_beat_efficient();
 }
@@ -152,16 +150,16 @@ mod test {
 
     #[test]
     fn part1_works() {
-        let actual = part1("test.txt");
+        let actual = create("test.txt").solve_part1();
 
-        assert_eq!(actual, 288);
+        assert_eq!(&actual, "288");
     }
 
     #[test]
     fn part2_works() {
-        let actual = part2("test.txt");
+        let actual = create("test.txt").solve_part2();
 
-        assert_eq!(actual, 71503);
+        assert_eq!(&actual, "71503");
     }
 
     #[test]
