@@ -11,24 +11,11 @@ fn benchmark_all(c: &mut Criterion) {
     group.sample_size(20);
     group.warm_up_time(Duration::from_millis(100));
 
-    benchmark_day(&mut group, &day18::create("real.txt"));
-    benchmark_day(&mut group, &day17::create("real.txt"));
-    benchmark_day(&mut group, &day16::create("real.txt"));
-    benchmark_day(&mut group, &day15::create("real.txt"));
-    benchmark_day(&mut group, &day14::create("real.txt"));
-    benchmark_day(&mut group, &day13::create("real.txt"));
-    benchmark_day(&mut group, &day12::create("real.txt"));
-    benchmark_day(&mut group, &day11::create("real.txt"));
-    benchmark_day(&mut group, &day10::create("real.txt"));
-    benchmark_day(&mut group, &day09::create("real.txt"));
-    benchmark_day(&mut group, &day08::create("real.txt"));
-    benchmark_day(&mut group, &day07::create("real.txt"));
-    benchmark_day(&mut group, &day06::create("real.txt"));
-    benchmark_day(&mut group, &day05::create("real.txt"));
-    benchmark_day(&mut group, &day04::create("real.txt"));
-    benchmark_day(&mut group, &day03::create("real.txt"));
-    benchmark_day(&mut group, &day02::create("real.txt"));
-    benchmark_day(&mut group, &day01::create("real.txt"));
+    let map = advent_day_map();
+    let mut days = map.iter().collect::<Vec<_>>();
+    days.sort_by(|a, b| b.0.cmp(a.0));
+    days.iter()
+        .for_each(|(_, day)| benchmark_day(&mut group, day));
 
     group.finish();
 }
