@@ -55,7 +55,7 @@ pub fn advent_day_map() -> HashMap<String, AdventDay> {
     map.insert("14".to_owned(), day14::create("real.txt"));
     map.insert("15".to_owned(), day15::create("real.txt"));
     map.insert("16".to_owned(), day16::create("real.txt"));
-    map.insert("17".to_owned(), day17::create("real.txt"));
+    map.insert("17".to_owned(), day17::create("test.txt"));
     map.insert("18".to_owned(), day18::create("real.txt"));
     map.insert("19".to_owned(), day19::create("real.txt"));
     return map;
