@@ -15,9 +15,8 @@ fn part1_with_input(input: &str) -> u64 {
 }
 
 fn part2_with_input(input: &str) -> u64 {
-    let _problem = Problem::parse(input);
-
-    return 167409079868000;
+    let problem = Problem::parse(input);
+    return problem.distinct_combinations_accepted();
 }
 
 struct Problem {
@@ -59,6 +58,11 @@ impl Problem {
             }
         }
     }
+
+    fn distinct_combinations_accepted(&self) -> u64 {
+        let workflow = self.workflows.get("in").unwrap();
+        return workflow.distinct_combinations_accepted(&self.workflows, &mut Vec::new());
+    }
 }
 
 struct Workflow {
@@ -90,23 +94,148 @@ impl Workflow {
             .next()
             .unwrap();
     }
+
+    fn distinct_combinations_accepted(
+        &self,
+        workflow_map: &HashMap<String, Workflow>,
+        filters: &mut Vec<RuleComparator>,
+    ) -> u64 {
+        let mut sum = 0;
+        let original_filter_count = filters.len();
+
+        for rule in self.rules.iter() {
+            if rule.action == "R" {
+                if !rule.is_constant() {
+                    filters.push(rule.rule_comparator.flip());
+                }
+                continue;
+            }
+            if rule.action != "A" {
+                let next_flow = workflow_map.get(&rule.action).unwrap();
+                if !rule.is_constant() {
+                    filters.push(rule.rule_comparator.clone());
+                }
+                sum += next_flow.distinct_combinations_accepted(workflow_map, filters);
+                if !rule.is_constant() {
+                    filters.pop();
+                    filters.push(rule.rule_comparator.flip());
+                }
+                continue;
+            }
+            if !rule.is_constant() {
+                filters.push(rule.rule_comparator.clone());
+            }
+            let mut x_filters = Vec::new();
+            let mut m_filters = Vec::new();
+            let mut a_filters = Vec::new();
+            let mut s_filters = Vec::new();
+            for filter in filters.iter() {
+                match filter.part_attr {
+                    'x' => x_filters.push(filter),
+                    'm' => m_filters.push(filter),
+                    'a' => a_filters.push(filter),
+                    's' => s_filters.push(filter),
+                    _ => unreachable!("unexpected char sorting filters"),
+                }
+            }
+
+            let xs = Self::calculate_rule_comparators(&mut x_filters);
+            let ms = Self::calculate_rule_comparators(&mut m_filters);
+            let a_s = Self::calculate_rule_comparators(&mut a_filters);
+            let ss = Self::calculate_rule_comparators(&mut s_filters);
+
+            sum += xs * ms * a_s * ss;
+            if !rule.is_constant() {
+                filters.pop();
+                filters.push(rule.rule_comparator.flip());
+            }
+        }
+
+        while filters.len() > original_filter_count {
+            filters.pop();
+        }
+
+        return sum;
+    }
+
+    fn calculate_rule_comparators(rule_comparators: &mut Vec<&RuleComparator>) -> u64 {
+        rule_comparators.insert(
+            0,
+            &RuleComparator {
+                part_attr: 'x',
+                comparator: Ordering::Greater,
+                threshold: 0,
+            },
+        );
+        rule_comparators.push(&RuleComparator {
+            part_attr: 'x',
+            comparator: Ordering::Less,
+            threshold: 4_001,
+        });
+        rule_comparators.sort_by(|a, b| a.threshold.cmp(&b.threshold));
+        let mut indexes_to_remove: Vec<usize> = Vec::new();
+        for (index, window) in rule_comparators.windows(2).enumerate() {
+            if window[0].comparator == window[1].comparator {
+                if window[0].comparator == Ordering::Greater {
+                    indexes_to_remove.push(index);
+                } else {
+                    indexes_to_remove.push(index + 1);
+                }
+            }
+        }
+        for &index in indexes_to_remove.iter().rev() {
+            rule_comparators.remove(index);
+        }
+        return rule_comparators
+            .chunks(2)
+            .map(|chunk| chunk[1].threshold - chunk[0].threshold - 1)
+            .sum::<u64>();
+    }
 }
 
 struct Rule {
-    part_attr: fn(&Part) -> u64,
+    part_attr_getter: fn(&Part) -> u64,
+    rule_comparator: RuleComparator,
+    action: String,
+}
+
+#[derive(Clone, Copy)]
+struct RuleComparator {
+    part_attr: char,
     comparator: Ordering,
     threshold: u64,
-    action: String,
+}
+
+impl RuleComparator {
+    fn flip(&self) -> RuleComparator {
+        let (comparator, threshold) = match self.comparator {
+            Ordering::Less => (Ordering::Greater, self.threshold - 1),
+            Ordering::Greater => (Ordering::Less, self.threshold + 1),
+            _ => unreachable!("should not flip comparators for equals"),
+        };
+        return RuleComparator {
+            part_attr: self.part_attr,
+            comparator,
+            threshold,
+        };
+    }
 }
 
 impl Rule {
     fn constant_rule(action: &str) -> Rule {
         return Rule {
-            part_attr: |_| u64::MAX,
-            comparator: Ordering::Equal,
-            threshold: u64::MAX,
+            part_attr_getter: |_| u64::MAX,
+            rule_comparator: RuleComparator {
+                part_attr: ' ',
+                comparator: Ordering::Equal,
+                threshold: u64::MAX,
+            },
             action: action.to_owned(),
         };
+    }
+
+    fn is_constant(&self) -> bool {
+        return self.rule_comparator.threshold == u64::MAX;
     }
 
     fn parse(input: &str) -> Rule {
@@ -114,7 +243,8 @@ impl Rule {
             return Self::constant_rule(input);
         }
         let mut input_chars = input.chars();
-        let part_attr = match input_chars.next().unwrap() {
+        let part_attr = input_chars.next().unwrap();
+        let part_attr_getter = match part_attr {
             'x' => Part::get_x,
             'm' => Part::get_m,
             'a' => Part::get_a,
@@ -131,20 +261,23 @@ impl Rule {
         let threshold = threshold_str.parse::<u64>().unwrap();
 
         return Rule {
-            part_attr,
-            comparator,
-            threshold,
+            part_attr_getter,
+            rule_comparator: RuleComparator {
+                part_attr,
+                comparator,
+                threshold,
+            },
             action: action.to_owned(),
         };
     }
 
     fn apply_to_part(&self, part: &Part) -> Option<String> {
-        if self.threshold == u64::MAX {
+        if self.rule_comparator.threshold == u64::MAX {
             return Some(self.action.clone());
         }
 
-        let attr = (self.part_attr)(part);
-        if attr.cmp(&self.threshold) == self.comparator {
+        let attr = (self.part_attr_getter)(part);
+        if attr.cmp(&self.rule_comparator.threshold) == self.rule_comparator.comparator {
             // TODO: is there a better way than clone here?
             return Some(self.action.clone());
         }
@@ -261,5 +394,17 @@ mod test {
         let actual = rule.apply_to_part(&part);
 
         assert_eq!(actual, expected.map(|str| str.to_owned()));
+    }
+
+    #[rstest]
+    #[case("in{x>2662:A,R}", (4_000 - 2_662) * 4_000 * 4_000 * 4_000)]
+    #[case("in{x<2663:R,A}", (4_000 - 2_662) * 4_000 * 4_000 * 4_000)]
+    #[case("in{x>1:A,a>2662:A,R}", (3_999) * 4_000 * 4_000 * 4_000 + 1 * (4_000 - 2_662) * 4_000 * 4_000)]
+    #[case("in{x<4000:A,a>2662:A,R}", (3_999) * 4_000 * 4_000 * 4_000 + 1 * (4_000 - 2_662) * 4_000 * 4_000)]
+    fn distinct_combinations_with_one_rule(#[case] input: &str, #[case] expected: u64) {
+        let problem = Problem::parse(input);
+        let actual = problem.distinct_combinations_accepted();
+
+        assert_eq!(actual, expected);
     }
 }
