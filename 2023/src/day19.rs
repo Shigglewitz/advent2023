@@ -84,7 +84,7 @@ impl Workflow {
         };
     }
 
-    fn apply_to_part(&self, part: &Part) -> String {
+    fn apply_to_part(&self, part: &Part) -> &String {
         return self
             .rules
             .iter()
@@ -173,18 +173,19 @@ impl Workflow {
             threshold: 4_001,
         });
         rule_comparators.sort_by(|a, b| a.threshold.cmp(&b.threshold));
-        let mut indexes_to_remove: Vec<usize> = Vec::new();
-        for (index, window) in rule_comparators.windows(2).enumerate() {
-            if window[0].comparator == window[1].comparator {
-                if window[0].comparator == Ordering::Greater {
-                    indexes_to_remove.push(index);
+        let mut num_comparators = rule_comparators.len();
+        let mut index = 0;
+        while index < num_comparators - 1 {
+            if rule_comparators[index].comparator == rule_comparators[index + 1].comparator {
+                if rule_comparators[index].comparator == Ordering::Greater {
+                    rule_comparators.remove(index);
                 } else {
-                    indexes_to_remove.push(index + 1);
+                    rule_comparators.remove(index + 1);
                 }
+                num_comparators -= 1;
+                continue;
             }
-        }
-        for &index in indexes_to_remove.iter().rev() {
-            rule_comparators.remove(index);
+            index += 1;
         }
         return rule_comparators
             .chunks(2)
@@ -194,7 +195,6 @@ impl Workflow {
 }
 
 struct Rule {
-    part_attr_getter: fn(&Part) -> u64,
     rule_comparator: RuleComparator,
     action: String,
 }
@@ -224,7 +224,6 @@ impl RuleComparator {
 impl Rule {
     fn constant_rule(action: &str) -> Rule {
         return Rule {
-            part_attr_getter: |_| u64::MAX,
             rule_comparator: RuleComparator {
                 part_attr: ' ',
                 comparator: Ordering::Equal,
@@ -244,13 +243,6 @@ impl Rule {
         }
         let mut input_chars = input.chars();
         let part_attr = input_chars.next().unwrap();
-        let part_attr_getter = match part_attr {
-            'x' => Part::get_x,
-            'm' => Part::get_m,
-            'a' => Part::get_a,
-            's' => Part::get_s,
-            _ => unreachable!("unrecognized char in rule parsing"),
-        };
         let comparator = match input_chars.next().unwrap() {
             '>' => Ordering::Greater,
             '<' => Ordering::Less,
@@ -261,7 +253,6 @@ impl Rule {
         let threshold = threshold_str.parse::<u64>().unwrap();
 
         return Rule {
-            part_attr_getter,
             rule_comparator: RuleComparator {
                 part_attr,
                 comparator,
@@ -271,15 +262,20 @@ impl Rule {
         };
     }
 
-    fn apply_to_part(&self, part: &Part) -> Option<String> {
+    fn apply_to_part(&self, part: &Part) -> Option<&String> {
         if self.rule_comparator.threshold == u64::MAX {
-            return Some(self.action.clone());
+            return Some(&self.action);
         }
 
-        let attr = (self.part_attr_getter)(part);
+        let attr = match self.rule_comparator.part_attr {
+            'x' => part.x,
+            'm' => part.m,
+            'a' => part.a,
+            's' => part.s,
+            _ => unreachable!("unrecognized char applying rule to part"),
+        };
         if attr.cmp(&self.rule_comparator.threshold) == self.rule_comparator.comparator {
-            // TODO: is there a better way than clone here?
-            return Some(self.action.clone());
+            return Some(&self.action);
         }
         return None;
     }
@@ -330,18 +326,7 @@ impl Part {
             .unwrap();
         return Part { x, m, a, s };
     }
-    fn get_x(&self) -> u64 {
-        return self.x;
-    }
-    fn get_m(&self) -> u64 {
-        return self.m;
-    }
-    fn get_a(&self) -> u64 {
-        return self.a;
-    }
-    fn get_s(&self) -> u64 {
-        return self.s;
-    }
+
     fn get_sum(&self) -> u64 {
         return self.x + self.m + self.a + self.s;
     }
@@ -370,10 +355,10 @@ mod test {
     fn part_parse_works() {
         let part = Part::parse("{x=787,m=2655,a=1222,s=2876}");
 
-        assert_eq!(part.get_x(), 787);
-        assert_eq!(part.get_m(), 2655);
-        assert_eq!(part.get_a(), 1222);
-        assert_eq!(part.get_s(), 2876);
+        assert_eq!(part.x, 787);
+        assert_eq!(part.m, 2655);
+        assert_eq!(part.a, 1222);
+        assert_eq!(part.s, 2876);
         assert_eq!(part.get_sum(), 7540);
     }
 
@@ -393,7 +378,7 @@ mod test {
 
         let actual = rule.apply_to_part(&part);
 
-        assert_eq!(actual, expected.map(|str| str.to_owned()));
+        assert_eq!(actual, expected.map(|str| str.to_owned()).as_ref());
     }
 
     #[rstest]
