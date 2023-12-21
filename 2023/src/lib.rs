@@ -20,6 +20,7 @@ pub mod day17;
 pub mod day18;
 pub mod day19;
 pub mod day20;
+pub mod day21;
 pub mod utils;
 
 pub struct AdventDay {
@@ -60,6 +61,7 @@ pub fn advent_day_map() -> HashMap<String, AdventDay> {
     map.insert("18".to_owned(), day18::create("real.txt"));
     map.insert("19".to_owned(), day19::create("real.txt"));
     map.insert("20".to_owned(), day20::create("real.txt"));
+    map.insert("21".to_owned(), day21::create("real.txt"));
     return map;
 }
 
