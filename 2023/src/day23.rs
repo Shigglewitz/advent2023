@@ -72,6 +72,24 @@ impl Forest {
         };
     }
 
+    fn get_unvisited_neighbors(&self, hike: &Hike) -> Vec<Point> {
+        let mut potential_neighbors: Vec<Option<Point>> = Vec::new();
+        let north_neighbor = self.north_neighbor(&hike.location);
+        let south_neighbor = self.south_neighbor(&hike.location);
+        let east_neighbor = self.east_neighbor(&hike.location);
+        let west_neighbor = self.west_neighbor(&hike.location);
+        potential_neighbors.push(north_neighbor);
+        potential_neighbors.push(south_neighbor);
+        potential_neighbors.push(east_neighbor);
+        potential_neighbors.push(west_neighbor);
+        return potential_neighbors
+            .iter()
+            .filter(|opt| opt.is_some())
+            .map(|opt| opt.clone().unwrap())
+            .filter(|neighbor| !hike.visited.contains(neighbor))
+            .collect::<Vec<_>>();
+    }
+
     fn traverse(&self) -> u32 {
         let mut finished_hikes: Vec<Hike> = Vec::new();
         let mut in_progress_hikes: Vec<Hike> = Vec::new();
@@ -84,38 +102,15 @@ impl Forest {
             while hike_index < num_hikes {
                 let hike = in_progress_hikes.get_mut(hike_index).unwrap();
                 hike.visit_self();
-                let mut neighbors: Vec<Point> = Vec::new();
-                let north_neighbor_opt = self.north_neighbor(&hike.location);
-                if let Some(north_neighbor) = north_neighbor_opt {
-                    neighbors.push(north_neighbor);
-                }
-                let south_neighbor_opt = self.south_neighbor(&hike.location);
-                if let Some(south_neighbor) = south_neighbor_opt {
-                    neighbors.push(south_neighbor);
-                }
-                let east_neighbor_opt = self.east_neighbor(&hike.location);
-                if let Some(east_neighbor) = east_neighbor_opt {
-                    neighbors.push(east_neighbor);
-                }
-                let west_neighbor_opt = self.west_neighbor(&hike.location);
-                if let Some(west_neighbor) = west_neighbor_opt {
-                    neighbors.push(west_neighbor);
-                }
-                let neighbors = neighbors
-                    .iter()
-                    .filter(|&neighbor| !hike.visited.contains(neighbor))
-                    .collect::<Vec<_>>();
-                let mut neighbors_iter = neighbors.iter();
-                let first_neighbor_opt = neighbors_iter.next();
-                if first_neighbor_opt.is_none() {
+                let neighbors = self.get_unvisited_neighbors(hike);
+                if neighbors.len() == 0 {
                     finished_hikes.push(hike.clone());
                     in_progress_hikes.remove(hike_index);
                     num_hikes -= 1;
                     continue;
                 }
-                let first_neighbor = first_neighbor_opt.unwrap();
-                hike.move_to(first_neighbor);
-                for neighbor in neighbors_iter {
+                hike.move_to(&neighbors[0]);
+                for neighbor in neighbors[1..].iter() {
                     let mut new_hike = hike.clone();
                     new_hike.move_to(neighbor);
                     new_hikes.push(new_hike);
