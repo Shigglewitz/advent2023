@@ -223,21 +223,17 @@ impl ForestGraph {
                     .collect::<Vec<_>>();
                 num_paths = next_steps.len();
                 if num_paths == 0 {
-                    if trace.current_location == end_point {
-                        adjacency_list
-                            .get_mut(&trace.starting_location)
-                            .unwrap()
-                            .insert(Edge {
-                                destination: end_point.clone(),
-                                distance: steps_taken,
-                            });
-                        adjacency_list.get_mut(&end_point).unwrap().insert(Edge {
-                            destination: trace.starting_location.clone(),
+                    adjacency_list
+                        .get_mut(&trace.starting_location)
+                        .unwrap()
+                        .insert(Edge {
+                            destination: end_point.clone(),
                             distance: steps_taken,
                         });
-                    } else {
-                        println!("dead end found at {:?}", trace.current_location);
-                    }
+                    adjacency_list.get_mut(&end_point).unwrap().insert(Edge {
+                        destination: trace.starting_location.clone(),
+                        distance: steps_taken,
+                    });
                 } else if num_paths == 1 {
                     trace.previous_location = trace.current_location;
                     trace.current_location = next_steps[0].clone();
