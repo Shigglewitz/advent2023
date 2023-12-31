@@ -1,7 +1,4 @@
-use std::{
-    cmp::{max, min},
-    collections::{HashMap, hash_map::Entry},
-};
+use std::collections::{hash_map::Entry, HashMap, HashSet};
 
 use crate::create_advent_day;
 
@@ -10,15 +7,19 @@ create_advent_day!("22");
 fn part1_with_input(input: &str) -> i32 {
     let mut bricks = input.lines().map(Brick::parse).collect::<Vec<_>>();
     apply_gravity(&mut bricks);
-    return find_connections(&bricks);
+    let relationships = BrickRelationships::find_connections(&bricks);
+    return relationships.count_removable(&bricks);
 }
 
-fn part2_with_input(input: &str) -> usize {
-    return input.len();
+fn part2_with_input(input: &str) -> i32 {
+    let mut bricks = input.lines().map(Brick::parse).collect::<Vec<_>>();
+    apply_gravity(&mut bricks);
+    let relationships = BrickRelationships::find_connections(&bricks);
+    return relationships.fall_potential(&bricks);
 }
 
 fn apply_gravity(bricks: &mut Vec<Brick>) {
-    bricks.sort_by_key(|brick| brick.point1.z.min(brick.point2.z));
+    bricks.sort_by_key(|brick| brick.min_z());
     let num_bricks = bricks.len();
     for index in 0..num_bricks {
         let new_height_opt = (0..index)
@@ -33,46 +34,99 @@ fn apply_gravity(bricks: &mut Vec<Brick>) {
     }
 }
 
-fn find_connections(bricks: &Vec<Brick>) -> i32 {
-    let mut max_height_map: HashMap<u32, Vec<usize>> = HashMap::new();
-    for (index, brick) in bricks.iter().enumerate() {
-        let height = max(brick.point1.z, brick.point2.z);
-        let array_at_height = match max_height_map.entry(height) {
-            Entry::Occupied(o) => o.into_mut(),
-            Entry::Vacant(v) => v.insert(Vec::new()),
-        };
-        array_at_height.push(index);
-    }
+struct BrickRelationships {
+    indexes_above: Vec<HashSet<usize>>,
+    indexes_below: Vec<HashSet<usize>>,
+}
 
-    let mut indexes_above: Vec<Vec<usize>> = vec![Vec::new(); bricks.len()];
-    let mut indexes_below: Vec<Vec<usize>> = vec![Vec::new(); bricks.len()];
-    for (index, brick) in bricks.iter().enumerate() {
-        let min_height = min(brick.point1.z, brick.point2.z);
-        let bricks_below_opt = &max_height_map.get(&(min_height - 1));
-        if bricks_below_opt.is_none() {
-            continue;
+impl BrickRelationships {
+    fn find_connections(bricks: &Vec<Brick>) -> Self {
+        let mut max_height_map: HashMap<u32, Vec<usize>> = HashMap::new();
+        for (index, brick) in bricks.iter().enumerate() {
+            let height = brick.max_z();
+            let array_at_height = match max_height_map.entry(height) {
+                Entry::Occupied(o) => o.into_mut(),
+                Entry::Vacant(v) => v.insert(Vec::new()),
+            };
+            array_at_height.push(index);
         }
-        let bricks_below = bricks_below_opt.unwrap();
-        for &brick_below_index in bricks_below {
-            if brick.intercepts(&bricks[brick_below_index]) {
-                indexes_above[brick_below_index].push(index);
-                indexes_below[index].push(brick_below_index);
+
+        let mut indexes_above: Vec<HashSet<usize>> = vec![HashSet::new(); bricks.len()];
+        let mut indexes_below: Vec<HashSet<usize>> = vec![HashSet::new(); bricks.len()];
+        for (index, brick) in bricks.iter().enumerate() {
+            let min_height = brick.min_z();
+            let bricks_below_opt = &max_height_map.get(&(min_height - 1));
+            if bricks_below_opt.is_none() {
+                continue;
+            }
+            let bricks_below = bricks_below_opt.unwrap();
+            for &brick_below_index in bricks_below {
+                if brick.intercepts(&bricks[brick_below_index]) {
+                    indexes_above[brick_below_index].insert(index);
+                    indexes_below[index].insert(brick_below_index);
+                }
             }
         }
+
+        return BrickRelationships {
+            indexes_above,
+            indexes_below,
+        };
     }
 
-    let mut num_removable = 0;
-    for index in 0..bricks.len() {
-        let above_indexes = &indexes_above[index];
-        let count = above_indexes
-            .iter()
-            .filter(|&&index| indexes_below[index].len() == 1)
-            .count();
-        if count == 0 {
-            num_removable += 1;
+    fn count_removable(&self, bricks: &Vec<Brick>) -> i32 {
+        let mut num_removable = 0;
+        for index in 0..bricks.len() {
+            let above_indexes = &self.indexes_above[index];
+            let count = above_indexes
+                .iter()
+                .filter(|&&index| self.indexes_below[index].len() == 1)
+                .count();
+            if count == 0 {
+                num_removable += 1;
+            }
         }
+        return num_removable;
     }
-    return num_removable;
+
+    fn fall_potential(&self, bricks: &Vec<Brick>) -> i32 {
+        let mut count = 0;
+        for (index, brick) in bricks.iter().enumerate() {
+            let mut check_me: HashMap<u32, HashSet<usize>> = HashMap::new();
+            let mut set = HashSet::new();
+            set.insert(index);
+            check_me.insert(brick.max_z(), set);
+            let mut analyze_this_height = brick.max_z() - 1;
+            while !check_me.is_empty() {
+                analyze_this_height += 1;
+                let analyze_this_opt = check_me.remove(&analyze_this_height);
+                if analyze_this_opt.is_none() {
+                    continue;
+                }
+                let analyze_this = analyze_this_opt.unwrap();
+                let mut bricks_to_check: HashSet<usize> = HashSet::new();
+                analyze_this.iter().for_each(|&ele| {
+                    bricks_to_check.extend(&self.indexes_above[ele]);
+                });
+                for brick_above_index in bricks_to_check {
+                    let remaining_support = self.indexes_below[brick_above_index]
+                        .difference(&analyze_this)
+                        .next();
+                    if remaining_support.is_none() {
+                        let set_at_height = match check_me.entry(bricks[brick_above_index].max_z())
+                        {
+                            Entry::Occupied(o) => o.into_mut(),
+                            Entry::Vacant(v) => v.insert(HashSet::new()),
+                        };
+                        set_at_height.insert(brick_above_index);
+                        count += 1;
+                    }
+                }
+            }
+        }
+
+        return count;
+    }
 }
 
 struct ThreeDPoint {
@@ -121,6 +175,10 @@ impl Brick {
     fn max_z(&self) -> u32 {
         return self.point1.z.max(self.point2.z);
     }
+
+    fn min_z(&self) -> u32 {
+        return self.point1.z.min(self.point2.z);
+    }
 }
 
 #[cfg(test)]
@@ -144,7 +202,7 @@ mod test {
     fn part2_works() {
         let actual = create("test.txt").solve_part2();
 
-        assert_eq!(actual, "83");
+        assert_eq!(actual, "7");
     }
 
     #[test]

@@ -311,13 +311,11 @@ mod test {
         assert_eq!(actual, "448");
     }
 
-    // TODO: bring this back when i figure it out
-    #[ignore]
     #[test]
     fn day22_part2() {
         let actual = day22::create("real.txt").solve_part2();
 
-        assert_eq!(actual, "");
+        assert_eq!(actual, "57770");
     }
 
     #[test]
