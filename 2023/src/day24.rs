@@ -11,7 +11,7 @@ fn part1_with_input(input: &str) -> u32 {
 }
 
 fn part2_with_input(input: &str) -> u32 {
-    return input.len() as u32;
+    return input.lines().count() as u32;
 }
 
 fn count_future_intersections(
@@ -118,7 +118,7 @@ mod test {
     fn part2_works() {
         let actual = create("test.txt").solve_part2();
 
-        assert_eq!(actual, "123");
+        assert_eq!(actual, "5");
     }
 
     #[test]

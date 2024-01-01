@@ -13,7 +13,7 @@ fn part1_with_input(input: &str) -> u64 {
 }
 
 fn part2_with_input(input: &str) -> usize {
-    return input.len();
+    return input.lines().count();
 }
 
 struct ModuleConfiguration {
@@ -285,7 +285,7 @@ mod test {
     fn part2_works() {
         let actual = create("test_1.txt").solve_part2();
 
-        assert_eq!(actual, "62".to_owned());
+        assert_eq!(actual, "5".to_owned());
     }
 
     #[test]

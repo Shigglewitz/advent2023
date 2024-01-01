@@ -8,11 +8,11 @@ fn part1_with_input(input: &str) -> u32 {
     let city_map = CityMap::parse(input);
     let _shortest_path = city_map.shortest_path();
 
-    return input.len() as u32;
+    return input.lines().count() as u32;
 }
 
 fn part2_with_input(input: &str) -> i32 {
-    return input.len() as i32;
+    return input.lines().count() as i32;
 }
 
 struct CityMap {
@@ -126,14 +126,14 @@ mod test {
     fn part1_works() {
         let actual = create("test.txt").solve_part1();
 
-        assert_eq!(&actual, "193");
+        assert_eq!(&actual, "13");
     }
 
     #[test]
     fn part2_works() {
         let actual = create("test.txt").solve_part2();
 
-        assert_eq!(&actual, "193");
+        assert_eq!(&actual, "13");
     }
 
     #[rstest]
