@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 use crate::create_advent_day;
 
@@ -177,6 +177,14 @@ struct Point {
     y: i32,
 }
 
+impl Point {
+    pub const MAX: usize = 140;
+
+    fn to_index(&self) -> usize {
+        return self.x as usize * Self::MAX + self.y as usize;
+    }
+}
+
 #[derive(PartialEq, Eq, Hash)]
 struct Edge {
     destination: Point,
@@ -184,7 +192,7 @@ struct Edge {
 }
 
 struct ForestGraph {
-    adjacency_list: HashMap<Point, HashSet<Edge>>,
+    adjacency_list: Vec<HashSet<Edge>>,
     end_point: Point,
 }
 
@@ -196,13 +204,14 @@ struct Trace {
 
 impl ForestGraph {
     fn parse(forest: &Forest) -> ForestGraph {
-        let mut adjacency_list = HashMap::new();
+        let mut adjacency_list = Vec::with_capacity(Point::MAX * Point::MAX + 1);
+        for _ in 0..(Point::MAX * Point::MAX + 1) {
+            adjacency_list.push(HashSet::new());
+        }
         let end_point = Point {
             x: forest.width as i32 - 2,
             y: forest.height as i32 - 1,
         };
-        adjacency_list.insert(Point { x: 1, y: 0 }, HashSet::new());
-        adjacency_list.insert(end_point.clone(), HashSet::new());
         let mut traces: Vec<Trace> = Vec::new();
         traces.push(Trace {
             starting_location: Point { x: 1, y: 0 },
@@ -223,14 +232,11 @@ impl ForestGraph {
                     .collect::<Vec<_>>();
                 num_paths = next_steps.len();
                 if num_paths == 0 {
-                    adjacency_list
-                        .get_mut(&trace.starting_location)
-                        .unwrap()
-                        .insert(Edge {
-                            destination: end_point.clone(),
-                            distance: steps_taken,
-                        });
-                    adjacency_list.get_mut(&end_point).unwrap().insert(Edge {
+                    adjacency_list[trace.starting_location.to_index()].insert(Edge {
+                        destination: end_point.clone(),
+                        distance: steps_taken,
+                    });
+                    adjacency_list[end_point.to_index()].insert(Edge {
                         destination: trace.starting_location.clone(),
                         distance: steps_taken,
                     });
@@ -238,22 +244,12 @@ impl ForestGraph {
                     trace.previous_location = trace.current_location;
                     trace.current_location = next_steps[0].clone();
                 } else if num_paths > 1 {
-                    adjacency_list
-                        .get_mut(&trace.starting_location)
-                        .unwrap()
-                        .insert(Edge {
-                            destination: trace.current_location.clone(),
-                            distance: steps_taken,
-                        });
-                    let found_vertex = adjacency_list.get_mut(&trace.current_location);
-                    if found_vertex.is_none() {
-                        adjacency_list.insert(
-                            trace.current_location.clone(),
-                            HashSet::from([Edge {
-                                destination: trace.starting_location.clone(),
-                                distance: steps_taken,
-                            }]),
-                        );
+                    adjacency_list[trace.starting_location.to_index()].insert(Edge {
+                        destination: trace.current_location.clone(),
+                        distance: steps_taken,
+                    });
+                    let found_vertex = &mut adjacency_list[trace.current_location.to_index()];
+                    if found_vertex.is_empty() {
                         for step in next_steps {
                             traces.push(Trace {
                                 starting_location: trace.current_location.clone(),
@@ -261,12 +257,11 @@ impl ForestGraph {
                                 previous_location: trace.current_location.clone(),
                             })
                         }
-                    } else {
-                        found_vertex.unwrap().insert(Edge {
-                            destination: trace.starting_location.clone(),
-                            distance: steps_taken,
-                        });
                     }
+                    found_vertex.insert(Edge {
+                        destination: trace.starting_location.clone(),
+                        distance: steps_taken,
+                    });
                 }
             }
         }
@@ -291,10 +286,7 @@ impl ForestGraph {
             return distance - 1;
         }
         seen_vertices[vertex.y as usize][vertex.x as usize] = true;
-        let max = self
-            .adjacency_list
-            .get(vertex)
-            .unwrap()
+        let max = self.adjacency_list[vertex.to_index()]
             .iter()
             .map(|edge| {
                 self.depth_first_search(&edge.destination, seen_vertices, distance + edge.distance)
