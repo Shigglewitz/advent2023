@@ -90,36 +90,37 @@ impl Forest {
     fn calculate_scenic_scores(&mut self) {
         for tree_row in 0..self.height {
             for tree_col in 0..self.width {
+                let current_height = self.trees[tree_row][tree_col].height;
                 let mut up_visible = 0;
                 for index in (0..tree_row).rev() {
                     up_visible += 1;
-                    if self.trees[index][tree_col].height >= self.trees[tree_row][tree_col].height {
+                    if self.trees[index][tree_col].height >= current_height {
                         break;
                     }
                 }
                 let mut left_visible = 0;
                 for index in (0..tree_col).rev() {
                     left_visible += 1;
-                    if self.trees[tree_row][index].height >= self.trees[tree_row][tree_col].height {
+                    if self.trees[tree_row][index].height >= current_height {
                         break;
                     }
                 }
                 let mut right_visible = 0;
-                for index in tree_col+1..self.width {
+                for index in tree_col + 1..self.width {
                     right_visible += 1;
-                    if self.trees[tree_row][index].height >= self.trees[tree_row][tree_col].height {
+                    if self.trees[tree_row][index].height >= current_height {
                         break;
                     }
                 }
                 let mut down_visible = 0;
-                for index in tree_row+1..self.height {
+                for index in tree_row + 1..self.height {
                     down_visible += 1;
-                    if self.trees[index][tree_col].height >= self.trees[tree_row][tree_col].height {
+                    if self.trees[index][tree_col].height >= current_height {
                         break;
                     }
                 }
-                self.trees[tree_row][tree_col].scenic_score = up_visible * left_visible * right_visible * down_visible;
-                
+                self.trees[tree_row][tree_col].scenic_score =
+                    up_visible * left_visible * right_visible * down_visible;
             }
         }
     }
