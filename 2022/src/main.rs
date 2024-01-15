@@ -1,4 +1,5 @@
 mod day1;
+mod day10;
 mod day2;
 mod day3;
 mod day4;
@@ -53,5 +54,10 @@ fn main() {
     println!("Day 9");
     println!("{}", day9::part1("real.txt"));
     println!("{}", day9::part2("real.txt"));
+    println!("");
+
+    println!("Day 10");
+    println!("{}", day10::part1("real.txt"));
+    println!("{}", day10::part2("real.txt"));
     println!("");
 }
