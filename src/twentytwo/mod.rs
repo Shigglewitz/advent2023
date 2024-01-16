@@ -15,6 +15,7 @@ pub mod day10;
 pub mod day11;
 pub mod day12;
 pub mod day13;
+pub mod day14;
 
 pub fn add_twenty_two(map: &mut HashMap<String, AdventDay>) {
     map.insert("2022_01".to_owned(), day01::create("real.txt"));
@@ -30,4 +31,5 @@ pub fn add_twenty_two(map: &mut HashMap<String, AdventDay>) {
     map.insert("2022_11".to_owned(), day11::create("real.txt"));
     map.insert("2022_12".to_owned(), day12::create("real.txt"));
     map.insert("2022_13".to_owned(), day13::create("real.txt"));
+    map.insert("2022_14".to_owned(), day14::create("real.txt"));
 }
