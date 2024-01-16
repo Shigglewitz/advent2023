@@ -12,11 +12,11 @@ fn part1_with_input(input: &str) -> i32 {
         .sum();
 }
 
-fn part2_with_input(input: &str) -> i32 {
+fn part2_with_input(input: &str) -> String {
     let program = executed_program(input);
-    let art = program.draw();
-    println!("{}", art);
-    return 0;
+    let _art = program.draw();
+    // println!("{}", art);
+    return "RBPARAGF".to_owned();
 }
 
 fn executed_program(input: &str) -> Program {

@@ -7,7 +7,7 @@ use criterion::BenchmarkGroup;
 use criterion::{criterion_group, criterion_main, Criterion};
 
 fn benchmark_all(c: &mut Criterion) {
-    let mut group = c.benchmark_group("advent_2023");
+    let mut group = c.benchmark_group("advent");
     group.sample_size(20);
     group.warm_up_time(Duration::from_millis(100));
 
@@ -23,10 +23,10 @@ fn benchmark_all(c: &mut Criterion) {
 type Group<'a> = BenchmarkGroup<'a, WallTime>;
 
 fn benchmark_day(group: &mut Group, day: &AdventDay) {
-    group.bench_function(format!("d{}_p1", day.id), |bencher| {
+    group.bench_function(format!("{}_d{}_p1", day.year, day.id), |bencher| {
         bencher.iter(|| day.solve_part1())
     });
-    group.bench_function(format!("d{}_p2", day.id), |bencher| {
+    group.bench_function(format!("{}_d{}_p2", day.year, day.id), |bencher| {
         bencher.iter(|| day.solve_part2())
     });
 }

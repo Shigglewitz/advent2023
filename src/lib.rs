@@ -6,6 +6,7 @@ pub mod utils;
 
 pub struct AdventDay {
     pub id: &'static str,
+    pub year: &'static str,
     input: String,
     part1: fn(&str) -> String,
     part2: fn(&str) -> String,
@@ -38,6 +39,7 @@ macro_rules! create_advent_day {
             let input = utils::read_file(&folder_name, file_name);
             return AdventDay {
                 id: $id,
+                year: $year,
                 input,
                 part1: |input| part1_with_input(input).to_string(),
                 part2: |input| part2_with_input(input).to_string(),

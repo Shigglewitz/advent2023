@@ -42,10 +42,10 @@ fn count_future_intersections(
 struct HailStone {
     px: i64,
     py: i64,
-    pz: i64,
+    _pz: i64,
     dx: i64,
     dy: i64,
-    dz: i64,
+    _dz: i64,
 }
 
 impl HailStone {
@@ -56,10 +56,10 @@ impl HailStone {
         return Self {
             px: p_split.next().unwrap().trim().parse::<i64>().unwrap(),
             py: p_split.next().unwrap().trim().parse::<i64>().unwrap(),
-            pz: p_split.next().unwrap().trim().parse::<i64>().unwrap(),
+            _pz: p_split.next().unwrap().trim().parse::<i64>().unwrap(),
             dx: v_split.next().unwrap().trim().parse::<i64>().unwrap(),
             dy: v_split.next().unwrap().trim().parse::<i64>().unwrap(),
-            dz: v_split.next().unwrap().trim().parse::<i64>().unwrap(),
+            _dz: v_split.next().unwrap().trim().parse::<i64>().unwrap(),
         };
     }
 
@@ -127,10 +127,10 @@ mod test {
 
         assert_eq!(hailstone.px, 19);
         assert_eq!(hailstone.py, 13);
-        assert_eq!(hailstone.pz, 30);
+        assert_eq!(hailstone._pz, 30);
         assert_eq!(hailstone.dx, -2);
         assert_eq!(hailstone.dy, 1);
-        assert_eq!(hailstone.dz, -2);
+        assert_eq!(hailstone._dz, -2);
     }
 
     #[test]
