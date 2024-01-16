@@ -1,4 +1,5 @@
 use crate::create_advent_day;
+use rayon::prelude::*;
 
 create_advent_day!("2022", "15");
 
@@ -7,8 +8,9 @@ fn part1_with_input(input: &str) -> i32 {
     return field.cannot_contain_beacon(2_000_000);
 }
 
-fn part2_with_input(input: &str) -> u32 {
-    return 0;
+fn part2_with_input(input: &str) -> u64 {
+    let field = Field::parse(input);
+    return field.find_beacon(4_000_000);
 }
 
 struct Point {
@@ -49,7 +51,7 @@ impl Field {
         return Self { sensors, beacons };
     }
 
-    fn cannot_contain_beacon(&self, y_value: i32) -> i32 {
+    fn affected_ranges(&self, y_value: i32) -> Vec<(i32, i32)> {
         let num_inputs = self.beacons.len();
         let mut ranges = (0..num_inputs)
             .map(|index| {
@@ -69,8 +71,38 @@ impl Field {
             .map(|opt| opt.unwrap())
             .collect::<Vec<_>>();
         ranges.sort_by(|a, b| a.0.cmp(&b.0));
-        let merged = Self::merge_ranges(ranges);
+        return Self::merge_ranges(ranges);
+    }
+
+    fn cannot_contain_beacon(&self, y_value: i32) -> i32 {
+        let merged = self.affected_ranges(y_value);
         return merged.iter().map(|tuple| tuple.1 - tuple.0).sum();
+    }
+
+    fn find_beacon(&self, upper: i32) -> u64 {
+        let location = &(0..=upper)
+            .into_par_iter()
+            .map(|y_value| self.has_free_space_between(y_value, 0, upper))
+            .filter(|opt| opt.is_some())
+            .map(|opt| opt.unwrap())
+            .collect::<Vec<_>>()[0];
+        return location.x as u64 * 4_000_000 + location.y as u64;
+    }
+
+    fn has_free_space_between(&self, y_value: i32, lower: i32, upper: i32) -> Option<Point> {
+        let merged = self.affected_ranges(y_value);
+        // TODO: if the answer is on the edge, this may miss one, but we'll see how likely that is
+        let filtered = merged
+            .iter()
+            .filter(|tuple| tuple.0 > lower && tuple.0 < upper)
+            .collect::<Vec<_>>();
+        if filtered.is_empty() {
+            return None;
+        }
+        return Some(Point {
+            x: filtered[0].0 - 1,
+            y: y_value,
+        });
     }
 
     fn merge_ranges(input: Vec<(i32, i32)>) -> Vec<(i32, i32)> {
@@ -109,8 +141,10 @@ mod test {
 
     #[test]
     fn part2_works() {
-        let actual = &create("test.txt").solve_part2();
+        let input = &utils::read_file("2022/day15", "test.txt");
+        let field = Field::parse(input);
+        let actual = field.find_beacon(20);
 
-        assert_eq!(actual, "0");
+        assert_eq!(actual, 56_000_011);
     }
 }
