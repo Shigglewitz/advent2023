@@ -13,8 +13,17 @@ fn part1_with_input(input: &str) -> u32 {
     return volcano.navigate(Volcano::id_for_label("AA"), 0, 30, HashSet::new());
 }
 
-fn part2_with_input(_input: &str) -> u32 {
-    return 0;
+fn part2_with_input(input: &str) -> u32 {
+    let volcano = Volcano::parse(input);
+    return volcano.navigate_with_elephant(
+        Volcano::id_for_label("AA"),
+        0,
+        Volcano::id_for_label("AA"),
+        0,
+        0,
+        26,
+        HashSet::new(),
+    );
 }
 
 struct Volcano {
@@ -119,6 +128,89 @@ impl Volcano {
         options.push(total_flow);
         return *options.iter().max().unwrap();
     }
+
+    fn navigate_with_elephant(
+        &self,
+        elephant_location: u64,
+        elephant_time_to_next_decision: u32,
+        my_location: u64,
+        my_time_to_next_decision: u32,
+        total_flow: u32,
+        time_left: u32,
+        opened_valves: HashSet<u64>,
+    ) -> u32 {
+        let mut new_total_flow = total_flow;
+        let mut elephant_options = if elephant_time_to_next_decision != 0 {
+            vec![(elephant_location, elephant_time_to_next_decision)]
+        } else {
+            new_total_flow += self.valves.get(&elephant_location).unwrap().flow_rate * time_left;
+            self.valves
+                .get(&elephant_location)
+                .unwrap()
+                .shortest_paths
+                .iter()
+                .filter(|(id, _)| !opened_valves.contains(id))
+                .filter(|(_, &distance)| distance + 1 < time_left)
+                .map(|(&id, distance)| (id, distance + 1))
+                .collect()
+        };
+        let mut my_options = if my_time_to_next_decision != 0 {
+            vec![(my_location, my_time_to_next_decision)]
+        } else {
+            new_total_flow += self.valves.get(&my_location).unwrap().flow_rate * time_left;
+            self.valves
+                .get(&my_location)
+                .unwrap()
+                .shortest_paths
+                .iter()
+                .filter(|(id, _)| !opened_valves.contains(id))
+                .filter(|(_, &distance)| distance + 1 < time_left)
+                .map(|(&id, distance)| (id, distance + 1))
+                .collect()
+        };
+
+        if elephant_options.len() + my_options.len() == 1 {
+            if elephant_options.is_empty() {
+                elephant_options.push((Self::id_for_label("AA"), time_left))
+            } else {
+                my_options.push((Self::id_for_label("AA"), time_left))
+            }
+        }
+
+        let mut zipped_options = Vec::with_capacity(elephant_options.len() * my_options.len());
+        for e_o in &elephant_options {
+            for m_o in &my_options {
+                zipped_options.push((e_o, m_o));
+            }
+        }
+
+        let mut all_options = zipped_options
+            .par_iter()
+            .filter(|tuple| tuple.0 .0 != tuple.1 .0)
+            .map(
+                |(
+                    &(elephant_next_location, elephant_next_distance),
+                    &(my_next_location, my_next_distance),
+                )| {
+                    let delta = elephant_next_distance.min(my_next_distance);
+                    let mut new_opened = opened_valves.clone();
+                    new_opened.insert(elephant_next_location);
+                    new_opened.insert(my_next_location);
+                    self.navigate_with_elephant(
+                        elephant_next_location,
+                        elephant_next_distance - delta,
+                        my_next_location,
+                        my_next_distance - delta,
+                        new_total_flow,
+                        time_left - delta,
+                        new_opened,
+                    )
+                },
+            )
+            .collect::<Vec<_>>();
+        all_options.push(new_total_flow);
+        return *all_options.iter().max().unwrap();
+    }
 }
 
 struct Valve {
@@ -166,7 +258,7 @@ mod test {
     fn part2_works() {
         let actual = &create("test.txt").solve_part2();
 
-        assert_eq!(actual, "0");
+        assert_eq!(actual, "1707");
     }
 
     #[test]
