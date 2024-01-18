@@ -28,6 +28,7 @@ fn part2_with_input(input: &str) -> u32 {
 
 struct Volcano {
     valves: HashMap<u64, Valve>,
+    root_node_hash: u64,
 }
 
 impl Volcano {
@@ -43,7 +44,10 @@ impl Volcano {
         input.lines().map(Valve::parse).for_each(|valve| {
             valves.insert(valve.id, valve);
         });
-        let mut volcano = Self { valves };
+        let mut volcano = Self {
+            valves,
+            root_node_hash: Self::id_for_label("AA"),
+        };
         volcano.find_valve_connections();
         return volcano;
     }
@@ -171,9 +175,9 @@ impl Volcano {
 
         if elephant_options.len() + my_options.len() == 1 {
             if elephant_options.is_empty() {
-                elephant_options.push((Self::id_for_label("AA"), time_left))
+                elephant_options.push((self.root_node_hash, time_left))
             } else {
-                my_options.push((Self::id_for_label("AA"), time_left))
+                my_options.push((self.root_node_hash, time_left))
             }
         }
 
