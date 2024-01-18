@@ -1,3 +1,4 @@
+use rayon::prelude::*;
 use std::{
     collections::{hash_map::DefaultHasher, HashMap, HashSet},
     hash::{Hash, Hasher},
@@ -12,7 +13,7 @@ fn part1_with_input(input: &str) -> u32 {
     return volcano.navigate(Volcano::id_for_label("AA"), 0, 30, HashSet::new());
 }
 
-fn part2_with_input(input: &str) -> u32 {
+fn part2_with_input(_input: &str) -> u32 {
     return 0;
 }
 
@@ -99,7 +100,7 @@ impl Volcano {
         let current = self.valves.get(&location_id).unwrap();
         let mut options = current
             .shortest_paths
-            .iter()
+            .par_iter()
             .filter(|(id, _)| !opened_valves.contains(id))
             .filter(|(_, &distance)| distance + 1 < time_left)
             .map(|(&id, distance)| {
