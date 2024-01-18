@@ -1,4 +1,7 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{hash_map::DefaultHasher, HashMap, HashSet},
+    hash::{Hash, Hasher},
+};
 
 use crate::create_advent_day;
 
@@ -6,7 +9,7 @@ create_advent_day!("2022", "16");
 
 fn part1_with_input(input: &str) -> u32 {
     let volcano = Volcano::parse(input);
-    return volcano.navigate(&"AA".to_owned(), 0, 30, HashSet::new());
+    return volcano.navigate(Volcano::id_for_label("AA"), 0, 30, HashSet::new());
 }
 
 fn part2_with_input(input: &str) -> u32 {
@@ -14,14 +17,21 @@ fn part2_with_input(input: &str) -> u32 {
 }
 
 struct Volcano {
-    valves: HashMap<String, Valve>,
+    valves: HashMap<u64, Valve>,
 }
 
 impl Volcano {
+    fn id_for_label(input: &str) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        input.hash(&mut hasher);
+        let hash = hasher.finish();
+        return hash;
+    }
+
     fn parse(input: &str) -> Self {
         let mut valves = HashMap::new();
         input.lines().map(Valve::parse).for_each(|valve| {
-            valves.insert(valve.label.clone(), valve);
+            valves.insert(valve.id, valve);
         });
         let mut volcano = Self { valves };
         volcano.find_valve_connections();
@@ -29,18 +39,18 @@ impl Volcano {
     }
 
     fn find_valve_connections(&mut self) {
-        let all_labels = self
+        let all_ids = self
             .valves
             .values()
-            .map(|valve| valve.label.clone())
+            .map(|valve| valve.id)
             .collect::<Vec<_>>();
-        for valve_label in all_labels {
+        for valve_id in all_ids {
             let mut seen_valves = HashSet::new();
             let mut distance = 1;
             let mut analyze_me = Vec::new();
             let mut shortest_paths = HashMap::new();
-            seen_valves.insert(&valve_label);
-            analyze_me.push(&valve_label);
+            seen_valves.insert(&valve_id);
+            analyze_me.push(&valve_id);
             while !analyze_me.is_empty() {
                 let limit = analyze_me.len();
                 let mut index = 0;
@@ -65,7 +75,7 @@ impl Volcano {
                                 > 0
                             {
                                 shortest_paths.insert(
-                                    current.connections[connection_index].clone(),
+                                    current.connections[connection_index],
                                     distance,
                                 );
                             }
@@ -77,30 +87,30 @@ impl Volcano {
                 analyze_me.drain(0..limit);
                 distance += 1;
             }
-            self.valves.get_mut(&valve_label).unwrap().shortest_paths = shortest_paths;
+            self.valves.get_mut(&valve_id).unwrap().shortest_paths = shortest_paths;
         }
     }
 
     fn navigate(
         &self,
-        location: &String,
+        location_id: u64,
         total_flow: u32,
         time_left: u32,
-        opened_valves: HashSet<String>,
+        opened_valves: HashSet<u64>,
     ) -> u32 {
-        let current = self.valves.get(location).unwrap();
+        let current = self.valves.get(&location_id).unwrap();
         let mut options = current
             .shortest_paths
             .iter()
-            .filter(|(label, _)| !opened_valves.contains(&(*label).clone()))
+            .filter(|(id, _)| !opened_valves.contains(id))
             .filter(|(_, &distance)| distance + 1 < time_left)
-            .map(|(label, distance)| {
+            .map(|(&id, distance)| {
                 let mut new_opened = opened_valves.clone();
-                new_opened.insert(label.clone());
-                let this_valve = self.valves.get(label).unwrap();
+                new_opened.insert(id);
+                let this_valve = self.valves.get(&id).unwrap();
                 let remaining_time = time_left - distance - 1;
                 self.navigate(
-                    label,
+                    id,
                     total_flow + (remaining_time * this_valve.flow_rate),
                     remaining_time,
                     new_opened,
@@ -113,10 +123,11 @@ impl Volcano {
 }
 
 struct Valve {
-    label: String,
+    _label: String,
+    id: u64,
     flow_rate: u32,
-    connections: Vec<String>,
-    shortest_paths: HashMap<String, u32>,
+    connections: Vec<u64>,
+    shortest_paths: HashMap<u64, u32>,
 }
 
 impl Valve {
@@ -129,10 +140,11 @@ impl Valve {
         let connections = rest[4..]
             .iter()
             .map(|str| str.trim_matches(','))
-            .map(|str| str.to_owned())
+            .map(|str| Volcano::id_for_label(str))
             .collect::<Vec<_>>();
         return Self {
-            label: label.to_owned(),
+            _label: label.to_owned(),
+            id: Volcano::id_for_label(label),
             flow_rate: flow_rate.parse().unwrap(),
             connections,
             shortest_paths: HashMap::new(),
@@ -163,21 +175,27 @@ mod test {
         let input = &utils::read_file("2022/day16", "test.txt");
         let volcano = Volcano::parse(input);
 
-        assert_eq!(volcano.valves.len(), 10);
-        assert_eq!(volcano.valves.get("AA").unwrap().connections.len(), 3);
-        assert_eq!(volcano.valves.get("AA").unwrap().flow_rate, 0);
-        assert_connected(&volcano, "AA", "DD");
-        assert_connected(&volcano, "AA", "II");
-        assert_connected(&volcano, "AA", "BB");
-        assert_eq!(volcano.valves.get("JJ").unwrap().connections.len(), 1);
-        assert_eq!(volcano.valves.get("JJ").unwrap().flow_rate, 21);
-        assert_connected(&volcano, "JJ", "II");
+        let aa_id = &Volcano::id_for_label("AA");
+        let bb_id = &Volcano::id_for_label("BB");
+        let dd_id = &Volcano::id_for_label("DD");
+        let ii_id = &Volcano::id_for_label("II");
+        let jj_id = &Volcano::id_for_label("JJ");
 
-        assert_eq!(volcano.valves.get("AA").unwrap().shortest_paths.len(), 6);
-        assert_eq!(volcano.valves.get("BB").unwrap().shortest_paths.len(), 5);
+        assert_eq!(volcano.valves.len(), 10);
+        assert_eq!(volcano.valves.get(aa_id).unwrap().connections.len(), 3);
+        assert_eq!(volcano.valves.get(aa_id).unwrap().flow_rate, 0);
+        assert_connected(&volcano, aa_id, dd_id);
+        assert_connected(&volcano, aa_id, ii_id);
+        assert_connected(&volcano, aa_id, bb_id);
+        assert_eq!(volcano.valves.get(jj_id).unwrap().connections.len(), 1);
+        assert_eq!(volcano.valves.get(jj_id).unwrap().flow_rate, 21);
+        assert_connected(&volcano, jj_id, ii_id);
+
+        assert_eq!(volcano.valves.get(aa_id).unwrap().shortest_paths.len(), 6);
+        assert_eq!(volcano.valves.get(bb_id).unwrap().shortest_paths.len(), 5);
     }
 
-    fn assert_connected(volcano: &Volcano, valve1: &str, valve2: &str) {
+    fn assert_connected(volcano: &Volcano, valve1: &u64, valve2: &u64) {
         assert!(volcano
             .valves
             .get(valve1)
@@ -190,5 +208,12 @@ mod test {
             .unwrap()
             .connections
             .contains(&valve1.to_owned()));
+    }
+
+    #[test]
+    fn hashing() {
+        let hash = Volcano::id_for_label("AA");
+
+        assert_eq!(hash, 8039442397745286354);
     }
 }
