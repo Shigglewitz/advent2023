@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, time::Instant};
 
 use advent::*;
 
@@ -31,6 +31,12 @@ fn main() {
 fn print_advent_day(day: &AdventDay) {
     println!("│ Day {} │", day.id);
     println!("├────────┤");
-    println!("│ Part 1 │ {}", day.solve_part1());
-    println!("│ Part 2 │ {}", day.solve_part2());
+    let p1_start = Instant::now();
+    let p1 = day.solve_part1();
+    let p1_duration = p1_start.elapsed();
+    println!("│ Part 1 │ {} {:?}", p1, p1_duration);
+    let p2_start = Instant::now();
+    let p2 = day.solve_part2();
+    let p2_duration = p2_start.elapsed();
+    println!("│ Part 2 │ {} {:?}", p2, p2_duration);
 }
