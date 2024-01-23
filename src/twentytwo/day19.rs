@@ -1,5 +1,5 @@
-use rayon::prelude::*;
 use crate::create_advent_day;
+use rayon::prelude::*;
 use std::{collections::HashSet, ops::Sub};
 
 create_advent_day!("2022", "19");
@@ -19,15 +19,15 @@ fn part2_with_input(input: &str) -> u32 {
     let mut blueprints = input.lines().map(Blueprint::parse).collect::<Vec<_>>();
     return blueprints
         .iter_mut()
+        .take(3)
         .map(|blueprint| {
             blueprint.find_max_geodes(32);
             blueprint.max_geodes
         })
-        .take(3)
         .product();
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Copy)]
 struct Resources {
     ore: u32,
     clay: u32,
@@ -82,7 +82,6 @@ enum RobotType {
     GEODE,
 }
 
-#[derive(Clone)]
 struct Blueprint {
     id: u32,
     ore_robot_cost: Resources,
@@ -155,7 +154,6 @@ impl Blueprint {
         return blueprint;
     }
 
-    // TODO: see if we can build more than one robot at a time
     fn possible_robots(&self, current_resources: &Resources) -> Vec<RobotType> {
         let mut possibilites = Vec::new();
         if current_resources.can_build(&self.ore_robot_cost) {
@@ -179,9 +177,28 @@ impl Blueprint {
         }
     }
 
+    fn calculate_max_possible_geodes(
+        current_geodes: u32,
+        current_geode_robots: u32,
+        minutes_remaining: u32,
+    ) -> u32 {
+        let last_number = minutes_remaining + current_geode_robots;
+        let first_number = current_geode_robots;
+        let quadratic = (last_number - first_number + 1) * (first_number + last_number) / 2;
+        return quadratic + current_geodes;
+    }
+
     fn simulate_minute(&self, input_state: GameState, minutes_remaining: u32) -> u32 {
         if minutes_remaining == 0 {
             return input_state.current_resources.geode;
+        }
+        if Self::calculate_max_possible_geodes(
+            input_state.current_resources.geode,
+            input_state.current_robots.geode,
+            minutes_remaining,
+        ) < input_state.highest_so_far
+        {
+            return input_state.highest_so_far;
         }
         let mut state = input_state.clone();
         let possible_robots = self.possible_robots(&state.current_resources);
@@ -191,6 +208,7 @@ impl Blueprint {
         state.current_resources.geode += state.current_robots.geode;
         let mut possible_current_resources = possible_robots
             .iter()
+            .rev()
             .filter(|robot| {
                 let current_robots_of_type = state.current_robots.get(robot);
                 let max_usage_of_type = self.max_costs.get(robot);
@@ -207,6 +225,7 @@ impl Blueprint {
                         current_resources: new_resources,
                         current_robots: new_robots,
                         ignored_builds: HashSet::new(),
+                        highest_so_far: state.highest_so_far,
                     }
                 }
                 RobotType::CLAY => {
@@ -218,6 +237,7 @@ impl Blueprint {
                         current_resources: new_resources,
                         current_robots: new_robots,
                         ignored_builds: HashSet::new(),
+                        highest_so_far: state.highest_so_far,
                     }
                 }
                 RobotType::OBSIDIAN => {
@@ -229,6 +249,7 @@ impl Blueprint {
                         current_resources: new_resources,
                         current_robots: new_robots,
                         ignored_builds: HashSet::new(),
+                        highest_so_far: state.highest_so_far,
                     }
                 }
                 RobotType::GEODE => {
@@ -240,6 +261,7 @@ impl Blueprint {
                         current_resources: new_resources,
                         current_robots: new_robots,
                         ignored_builds: HashSet::new(),
+                        highest_so_far: state.highest_so_far,
                     }
                 }
             })
@@ -250,8 +272,15 @@ impl Blueprint {
         });
         possible_current_resources.push(do_not_build);
         return possible_current_resources
-            .par_iter()
-            .map(|game_state| self.simulate_minute(game_state.clone(), minutes_remaining - 1))
+            .par_iter_mut()
+            .fold(
+                || state.highest_so_far,
+                |acc, ele| {
+                    ele.highest_so_far = acc;
+                    acc.max(self.simulate_minute(ele.clone(), minutes_remaining - 1))
+                },
+            )
+            // .map(|game_state| self.simulate_minute(game_state.clone(), minutes_remaining - 1))
             .max()
             .unwrap();
     }
@@ -266,6 +295,7 @@ struct GameState {
     current_resources: Resources,
     current_robots: Resources,
     ignored_builds: HashSet<RobotType>,
+    highest_so_far: u32,
 }
 
 impl GameState {
@@ -279,6 +309,7 @@ impl GameState {
                 geode: 0,
             },
             ignored_builds: HashSet::new(),
+            highest_so_far: 0,
         };
     }
 }
@@ -298,7 +329,7 @@ mod test {
     fn part2_works() {
         let actual = &create("test.txt").solve_part2();
 
-        assert_eq!(actual, "0");
+        assert_eq!(actual, "3472");
     }
 
     #[test]
