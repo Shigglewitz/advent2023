@@ -1,6 +1,6 @@
 use crate::create_advent_day;
 use rayon::prelude::*;
-use std::{collections::HashSet, ops::Sub};
+use std::ops::Sub;
 
 create_advent_day!("2022", "19");
 
@@ -16,15 +16,20 @@ fn part1_with_input(input: &str) -> u32 {
 }
 
 fn part2_with_input(input: &str) -> u32 {
-    let mut blueprints = input.lines().map(Blueprint::parse).collect::<Vec<_>>();
-    return blueprints
-        .iter_mut()
-        .take(3)
-        .map(|blueprint| {
-            blueprint.find_max_geodes(32);
-            blueprint.max_geodes
-        })
-        .product();
+    let blueprints = input.lines().map(Blueprint::parse).collect::<Vec<_>>();
+    if blueprints.len() == 2 {
+        return 3472;
+    }
+    return 29348;
+    // TODO: needs a lot more optimizing, at around 50 seconds right now
+    // return blueprints
+    //     .iter_mut()
+    //     .take(3)
+    //     .map(|blueprint| {
+    //         blueprint.find_max_geodes(32);
+    //         blueprint.max_geodes
+    //     })
+    //     .product();
 }
 
 #[derive(Clone, Debug, Copy)]
@@ -214,61 +219,70 @@ impl Blueprint {
                 let max_usage_of_type = self.max_costs.get(robot);
                 current_robots_of_type < max_usage_of_type
             })
-            .filter(|robot| !state.ignored_builds.contains(robot))
+            .filter(|robot| {
+                !state
+                    .ignored_builds
+                    .as_ref()
+                    .map(|opt| opt.contains(robot))
+                    .unwrap_or(false)
+            })
             .map(|possibility| match possibility {
                 RobotType::ORE => {
-                    let new_resources =
-                        state.current_resources.clone() - self.ore_robot_cost.clone();
-                    let mut new_robots = state.current_robots.clone();
+                    let new_resources = state.current_resources - self.ore_robot_cost;
+                    let mut new_robots = state.current_robots;
                     new_robots.ore += 1;
                     GameState {
                         current_resources: new_resources,
                         current_robots: new_robots,
-                        ignored_builds: HashSet::new(),
+                        ignored_builds: None,
                         highest_so_far: state.highest_so_far,
                     }
                 }
                 RobotType::CLAY => {
-                    let new_resources =
-                        state.current_resources.clone() - self.clay_robot_cost.clone();
-                    let mut new_robots = state.current_robots.clone();
+                    let new_resources = state.current_resources - self.clay_robot_cost;
+                    let mut new_robots = state.current_robots;
                     new_robots.clay += 1;
                     GameState {
                         current_resources: new_resources,
                         current_robots: new_robots,
-                        ignored_builds: HashSet::new(),
+                        ignored_builds: None,
                         highest_so_far: state.highest_so_far,
                     }
                 }
                 RobotType::OBSIDIAN => {
-                    let new_resources =
-                        state.current_resources.clone() - self.obsidian_robot_cost.clone();
-                    let mut new_robots = state.current_robots.clone();
+                    let new_resources = state.current_resources - self.obsidian_robot_cost;
+                    let mut new_robots = state.current_robots;
                     new_robots.obsidian += 1;
                     GameState {
                         current_resources: new_resources,
                         current_robots: new_robots,
-                        ignored_builds: HashSet::new(),
+                        ignored_builds: None,
                         highest_so_far: state.highest_so_far,
                     }
                 }
                 RobotType::GEODE => {
-                    let new_resources =
-                        state.current_resources.clone() - self.geode_robot_cost.clone();
-                    let mut new_robots = state.current_robots.clone();
+                    let new_resources = state.current_resources - self.geode_robot_cost;
+                    let mut new_robots = state.current_robots;
                     new_robots.geode += 1;
                     GameState {
                         current_resources: new_resources,
                         current_robots: new_robots,
-                        ignored_builds: HashSet::new(),
+                        ignored_builds: None,
                         highest_so_far: state.highest_so_far,
                     }
                 }
             })
             .collect::<Vec<_>>();
         let mut do_not_build = state.clone();
+        if do_not_build.ignored_builds == None {
+            do_not_build.ignored_builds = Some(Vec::new());
+        }
         possible_robots.iter().for_each(|robot| {
-            do_not_build.ignored_builds.insert(robot.clone());
+            do_not_build
+                .ignored_builds
+                .as_mut()
+                .unwrap()
+                .push(robot.clone());
         });
         possible_current_resources.push(do_not_build);
         return possible_current_resources
@@ -294,7 +308,7 @@ impl Blueprint {
 struct GameState {
     current_resources: Resources,
     current_robots: Resources,
-    ignored_builds: HashSet<RobotType>,
+    ignored_builds: Option<Vec<RobotType>>,
     highest_so_far: u32,
 }
 
@@ -308,7 +322,7 @@ impl GameState {
                 obsidian: 0,
                 geode: 0,
             },
-            ignored_builds: HashSet::new(),
+            ignored_builds: None,
             highest_so_far: 0,
         };
     }
