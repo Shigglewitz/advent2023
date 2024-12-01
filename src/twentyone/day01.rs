@@ -21,15 +21,20 @@ fn part1_with_input(input: &str) -> i64 {
 
 fn part2_with_input(input: &str) -> i64 {
     let depths = input
-    .lines()
-    .map(|line| line.parse::<i64>().unwrap())
-    .collect::<Vec<i64>>();
+        .lines()
+        .map(|line| line.parse::<i64>().unwrap())
+        .collect::<Vec<i64>>();
 
-    let windows_sum = depths.windows(3).map(|window| window[0]+window[1]+window[2])
-    .collect::<Vec<i64>>();
-    return windows_sum.windows(2).filter(|window|{
-        window[0] < window[1]
-    }).count().try_into().unwrap();
+    let windows_sum = depths
+        .windows(3)
+        .map(|window| window[0] + window[1] + window[2])
+        .collect::<Vec<i64>>();
+    return windows_sum
+        .windows(2)
+        .filter(|window| window[0] < window[1])
+        .count()
+        .try_into()
+        .unwrap();
 }
 
 #[cfg(test)]
