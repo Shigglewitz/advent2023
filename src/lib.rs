@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 pub mod twentyfour;
+pub mod twentyone;
 pub mod twentythree;
 pub mod twentytwo;
 pub mod utils;
@@ -24,6 +25,7 @@ impl AdventDay {
 
 pub fn advent_day_map() -> HashMap<String, AdventDay> {
     let mut map = HashMap::new();
+    twentyone::add_twenty_one(&mut map);
     twentytwo::add_twenty_two(&mut map);
     twentythree::add_twenty_three(&mut map);
     twentyfour::add_twenty_four(&mut map);
