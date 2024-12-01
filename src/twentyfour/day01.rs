@@ -21,9 +21,8 @@ fn part1_with_input(input: &str) -> i64 {
 
     for it in left.iter().zip(right.iter()) {
         let (a, b) = it;
-        sum += (a-b).abs();
+        sum += (a - b).abs();
     }
-    
 
     return sum;
 }
@@ -40,9 +39,10 @@ fn part2_with_input(input: &str) -> i64 {
         right.insert(right_val, curr_val + 1);
     });
 
-    return left.iter().map(|location| {
-        location * right.get(location).unwrap_or(&0)
-    }).sum();
+    return left
+        .iter()
+        .map(|location| location * right.get(location).unwrap_or(&0))
+        .sum();
 }
 
 #[cfg(test)]
