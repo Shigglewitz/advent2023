@@ -1,6 +1,6 @@
 use crate::create_advent_day;
 
-create_advent_day!("2024", "03");
+create_advent_day!("2024", "04");
 
 fn part1_with_input(_input: &str) -> i64 {
     return 0;
