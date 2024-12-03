@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 num = "0.4.1"
 rayon = "1.8.0"
+regex = "1.11.1"
 rstest = "0.18.2"
 
 [dev-dependencies]

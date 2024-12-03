@@ -47,7 +47,11 @@ fn part2_with_input(input: &str) -> i64 {
 
     let all_letters = input
         .lines()
-        .map(|line| line.chars().map(|letter| letter.to_digit(10).unwrap() as i32).collect::<Vec<i32>>())
+        .map(|line| {
+            line.chars()
+                .map(|letter| letter.to_digit(10).unwrap() as i32)
+                .collect::<Vec<i32>>()
+        })
         .collect::<Vec<Vec<i32>>>();
 
     for word in all_letters {
