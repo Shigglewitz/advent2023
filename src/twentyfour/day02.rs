@@ -19,15 +19,15 @@ fn part1_with_input(input: &str) -> i64 {
 
 fn part2_with_input(input: &str) -> i64 {
     return input
-    .lines()
-    .map(|line| {
-        line.split_whitespace()
-            .map(|word| word.parse::<i64>().unwrap())
-            .collect::<Vec<i64>>()
-    })
-    .filter(|arr| is_safe_dampener(arr))
-    .count()
-    .as_();
+        .lines()
+        .map(|line| {
+            line.split_whitespace()
+                .map(|word| word.parse::<i64>().unwrap())
+                .collect::<Vec<i64>>()
+        })
+        .filter(|arr| is_safe_dampener(arr))
+        .count()
+        .as_();
 }
 
 fn is_safe(arr: &Vec<i64>) -> bool {
