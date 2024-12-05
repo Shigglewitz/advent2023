@@ -7,32 +7,13 @@ fn part1_with_input(input: &str) -> i64 {
 
     let mut valid_updates = Vec::new();
     for update in parsed_input.updates.iter() {
-        let valid = parsed_input.rules.iter().fold(true, |acc: bool, rule| {
-            if !acc {
-                return acc;
+        let mut valid = true;
+        for rule in parsed_input.rules.iter() {
+            if !rule.applies(&update) {
+                valid = false;
+                break;
             }
-            let mut first_index: i64 = -1;
-            let mut second_index: i64 = -1;
-            for i in 0..update.len() {
-                if update[i] == rule.first {
-                    first_index = i as i64;
-                    break;
-                }
-            }
-            if first_index == -1 {
-                return true;
-            }
-            for i in 0..update.len() {
-                if update[i] == rule.second {
-                    second_index = i as i64;
-                    break;
-                }
-            }
-            if second_index == -1 {
-                return true;
-            }
-            return first_index < second_index;
-        });
+        }
         if valid {
             valid_updates.push(update);
         }
@@ -90,6 +71,38 @@ struct Rule {
     second: i64,
 }
 
+impl Rule {
+    fn applies(&self, update: &Vec<i64>) -> bool {
+        let (first_index, second_index) = self.indexes(update);
+        if first_index == -1 || second_index == -1 {
+            return true;
+        }
+        return first_index < second_index;
+    }
+
+    fn indexes(&self, update: &Vec<i64>) -> (i64, i64) {
+        let mut first_index = -1;
+        let mut second_index = -1;
+
+        for i in 0..update.len() {
+            if update[i] == self.first {
+                first_index = i as i64;
+                break;
+            }
+        }
+        if first_index == -1 {
+            return (first_index, second_index);
+        }
+        for i in 0..update.len() {
+            if update[i] == self.second {
+                second_index = i as i64;
+                break;
+            }
+        }
+        return (first_index, second_index);
+    }
+}
+
 struct ParsedInput {
     rules: Vec<Rule>,
     updates: Vec<Vec<i64>>,
@@ -100,32 +113,13 @@ fn part2_with_input(input: &str) -> i64 {
 
     let mut invalid_updates = Vec::new();
     for update in parsed_input.updates.iter() {
-        let valid = parsed_input.rules.iter().fold(true, |acc: bool, rule| {
-            if !acc {
-                return acc;
+        let mut valid = true;
+        for rule in parsed_input.rules.iter() {
+            if !rule.applies(update) {
+                valid = false;
+                break;
             }
-            let mut first_index: i64 = -1;
-            let mut second_index: i64 = -1;
-            for i in 0..update.len() {
-                if update[i] == rule.first {
-                    first_index = i as i64;
-                    break;
-                }
-            }
-            if first_index == -1 {
-                return true;
-            }
-            for i in 0..update.len() {
-                if update[i] == rule.second {
-                    second_index = i as i64;
-                    break;
-                }
-            }
-            if second_index == -1 {
-                return true;
-            }
-            return first_index < second_index;
-        });
+        }
         if !valid {
             invalid_updates.push(update.clone());
         }
@@ -138,24 +132,8 @@ fn part2_with_input(input: &str) -> i64 {
             while !clean {
                 clean = true;
                 for rule in parsed_input.rules.iter() {
-                    let mut first_index: i64 = -1;
-                    let mut second_index: i64 = -1;
-                    for i in 0..update.len() {
-                        if update[i] == rule.first {
-                            first_index = i as i64;
-                            break;
-                        }
-                    }
-                    if first_index == -1 {
-                        continue;
-                    }
-                    for i in 0..update.len() {
-                        if update[i] == rule.second {
-                            second_index = i as i64;
-                            break;
-                        }
-                    }
-                    if second_index == -1 {
+                    let (first_index, second_index) = rule.indexes(update);
+                    if first_index == -1 || second_index == -1 {
                         continue;
                     }
                     if first_index > second_index {
