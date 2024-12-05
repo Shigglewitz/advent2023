@@ -101,6 +101,11 @@ impl Rule {
         }
         return (first_index, second_index);
     }
+
+    fn is_relevant(&self, update: &Vec<i64>) -> bool {
+        let (first_index, second_index) = self.indexes(update);
+        return first_index != -1 && second_index != -1;
+    }
 }
 
 struct ParsedInput {
@@ -128,10 +133,15 @@ fn part2_with_input(input: &str) -> i64 {
     let invalid_updates: Vec<&mut Vec<i64>> = invalid_updates
         .iter_mut()
         .map(|update| {
+            let relevant_rules: Vec<&Rule> = parsed_input
+                .rules
+                .iter()
+                .filter(|rule| rule.is_relevant(update))
+                .collect();
             let mut clean = false;
             while !clean {
                 clean = true;
-                for rule in parsed_input.rules.iter() {
+                for rule in relevant_rules.iter() {
                     let (first_index, second_index) = rule.indexes(update);
                     if first_index == -1 || second_index == -1 {
                         continue;
