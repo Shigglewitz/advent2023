@@ -89,22 +89,6 @@ impl Guard {
         return true;
     }
 
-    fn find_path(&mut self, map: &Vec<Vec<Cell>>, cache: &mut HashSet<(i32, i32)>) -> bool {
-        cache.insert((self.x_position, self.y_position));
-        let (x, y) = self.next_position();
-        if x < 0 || x >= map[0].len() as i32 || y < 0 || y >= map.len() as i32 {
-            return false;
-        }
-        let next_cell = &map[y as usize][x as usize];
-        if next_cell.cell_type == CellType::OBSTACLE {
-            self.direction = self.direction.rotate();
-        } else {
-            self.x_position = x;
-            self.y_position = y;
-        }
-        return true;
-    }
-
     fn patrol_with_cache(
         &mut self,
         map: &Vec<Vec<Cell>>,
@@ -163,7 +147,7 @@ fn part2_with_input(input: &str) -> i64 {
         y_position: 0,
         direction: Direction::NORTH,
     };
-    let map: Vec<Vec<Cell>> = input
+    let mut map: Vec<Vec<Cell>> = input
         .lines()
         .enumerate()
         .map(|(line_num, line)| {
@@ -188,22 +172,35 @@ fn part2_with_input(input: &str) -> i64 {
         })
         .collect::<Vec<Vec<Cell>>>();
 
-    let original_position = (guard.x_position, guard.y_position);
-    let mut cache = HashSet::new();
-    while guard.find_path(&map, &mut cache) {}
-    cache.remove(&(original_position.0, original_position.1));
+    let original_position = (guard.x_position as usize, guard.y_position as usize);
+    while guard.patrol(&mut map) {}
+    let visited_cells: Vec<(i64, i64)> = map
+        .iter()
+        .enumerate()
+        .map(|(row_num, row)| {
+            row.iter()
+                .enumerate()
+                .filter_map(|(cell_num, cell)| {
+                    if cell.visited {
+                        if cell_num == original_position.0 && row_num == original_position.1 {
+                            Err(0)
+                        } else {
+                            Ok((cell_num as i64, row_num as i64))
+                        }
+                    } else {
+                        Err(0)
+                    }.ok()
+                })
+                .collect::<Vec<(i64, i64)>>()
+        })
+        .flatten()
+        .collect();
 
-    return cache
+    return visited_cells
         .par_iter()
         .map(|(x_int, y_int)| {
             let x_size = *x_int as usize;
             let y_size = *y_int as usize;
-            if map[y_size][x_size].cell_type == CellType::OBSTACLE {
-                return 0;
-            }
-            if *y_int == original_position.1 && *x_int == original_position.0 {
-                return 0;
-            }
             let mut my_map = map.clone();
             my_map[y_size][x_size].cell_type = CellType::OBSTACLE;
             let mut my_guard = Guard {
