@@ -1,5 +1,7 @@
 use std::collections::HashSet;
 
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
+
 use crate::create_advent_day;
 
 create_advent_day!("2024", "06");
@@ -50,12 +52,13 @@ fn part1_with_input(input: &str) -> i64 {
         .sum();
 }
 
+#[derive(Clone)]
 struct Cell {
     cell_type: CellType,
     visited: bool,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 enum CellType {
     EMPTY,
     OBSTACLE,
@@ -155,7 +158,7 @@ fn part2_with_input(input: &str) -> i64 {
         y_position: 0,
         direction: Direction::NORTH,
     };
-    let mut map: Vec<Vec<Cell>> = input
+    let map: Vec<Vec<Cell>> = input
         .lines()
         .enumerate()
         .map(|(line_num, line)| {
@@ -183,39 +186,38 @@ fn part2_with_input(input: &str) -> i64 {
         })
         .collect::<Vec<Vec<Cell>>>();
 
-    let mut sum = 0;
-
     let original_position = (guard.x_position as usize, guard.y_position as usize);
     let length = map.len();
-    for y in 0..length {
-        for x in 0..length {
-            let cell = &map[y][x];
-            if cell.cell_type == CellType::OBSTACLE {
-                continue;
+    return (0..length).into_par_iter().map(|y| {
+        (0..length).into_par_iter().map(|x| {
+            if map[y][x].cell_type == CellType::OBSTACLE {
+                return 0;
             }
             if y == original_position.1 && x == original_position.0 {
-                continue;
+                return 0;
             }
-            map[y][x].cell_type = CellType::OBSTACLE;
-            guard.x_position = original_position.0 as i32;
-            guard.y_position = original_position.1 as i32;
-            guard.direction = Direction::NORTH;
+            let mut my_map = map.clone();
+            my_map[y][x].cell_type = CellType::OBSTACLE;
+            let mut my_guard = Guard {
+                x_position: original_position.0 as i32,
+                y_position: original_position.1 as i32,
+                direction: Direction::NORTH,
+            };
             let mut outcome: PatrolOutcome;
             let mut cache = HashSet::new();
             loop {
-                outcome = guard.patrol_with_cache(&map, &mut cache);
+                outcome = my_guard.patrol_with_cache(&my_map, &mut cache);
                 if outcome != PatrolOutcome::CONTINUE {
                     break;
                 }
             }
-            map[y][x].cell_type = CellType::EMPTY;
             if outcome == PatrolOutcome::INFINITE {
-                sum += 1;
+                1
+            } else {
+                0
             }
-        }
-    }
-
-    return sum;
+        }).sum::<i64>()
+    }).sum::<i64>();
 }
 
 #[cfg(test)]
