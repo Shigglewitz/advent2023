@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
 use crate::create_advent_day;
 
@@ -31,10 +31,7 @@ fn part1_with_input(input: &str) -> i64 {
                     } else {
                         false
                     };
-                    Cell {
-                        cell_type,
-                        visited,
-                    }
+                    Cell { cell_type, visited }
                 })
                 .collect::<Vec<Cell>>()
         })
@@ -44,11 +41,7 @@ fn part1_with_input(input: &str) -> i64 {
 
     return map
         .iter()
-        .map(|row| {
-            row.iter()
-                .map(|cell| if cell.visited { 1 } else { 0 })
-                .sum::<i64>()
-        })
+        .map(|row| row.iter().filter(|cell| cell.visited).count() as i64)
         .sum();
 }
 
@@ -85,15 +78,27 @@ impl Guard {
         if x < 0 || x >= map[0].len() as i32 || y < 0 || y >= map.len() as i32 {
             return false;
         }
-        let next_cell = map
-            .get_mut(y as usize)
-            .unwrap()
-            .get_mut(x as usize)
-            .unwrap();
+        let next_cell = &mut map[y as usize][x as usize];
         if next_cell.cell_type == CellType::OBSTACLE {
             self.direction = self.direction.rotate();
         } else {
+            self.x_position = x;
+            self.y_position = y;
             next_cell.visited = true;
+        }
+        return true;
+    }
+
+    fn find_path(&mut self, map: &Vec<Vec<Cell>>, cache: &mut HashSet<(i32, i32)>) -> bool {
+        cache.insert((self.x_position, self.y_position));
+        let (x, y) = self.next_position();
+        if x < 0 || x >= map[0].len() as i32 || y < 0 || y >= map.len() as i32 {
+            return false;
+        }
+        let next_cell = &map[y as usize][x as usize];
+        if next_cell.cell_type == CellType::OBSTACLE {
+            self.direction = self.direction.rotate();
+        } else {
             self.x_position = x;
             self.y_position = y;
         }
@@ -177,27 +182,30 @@ fn part2_with_input(input: &str) -> i64 {
                     } else {
                         false
                     };
-                    Cell {
-                        cell_type,
-                        visited,
-                    }
+                    Cell { cell_type, visited }
                 })
                 .collect::<Vec<Cell>>()
         })
         .collect::<Vec<Vec<Cell>>>();
 
-    let original_position = (guard.x_position as usize, guard.y_position as usize);
-    let length = map.len();
-    return (0..length).into_par_iter().map(|y| {
-        (0..length).into_par_iter().map(|x| {
-            if map[y][x].cell_type == CellType::OBSTACLE {
+    let original_position = (guard.x_position, guard.y_position);
+    let mut cache = HashSet::new();
+    while guard.find_path(&map, &mut cache) {}
+    cache.remove(&(original_position.0, original_position.1));
+
+    return cache
+        .par_iter()
+        .map(|(x_int, y_int)| {
+            let x_size = *x_int as usize;
+            let y_size = *y_int as usize;
+            if map[y_size][x_size].cell_type == CellType::OBSTACLE {
                 return 0;
             }
-            if y == original_position.1 && x == original_position.0 {
+            if *y_int == original_position.1 && *x_int == original_position.0 {
                 return 0;
             }
             let mut my_map = map.clone();
-            my_map[y][x].cell_type = CellType::OBSTACLE;
+            my_map[y_size][x_size].cell_type = CellType::OBSTACLE;
             let mut my_guard = Guard {
                 x_position: original_position.0 as i32,
                 y_position: original_position.1 as i32,
@@ -216,8 +224,8 @@ fn part2_with_input(input: &str) -> i64 {
             } else {
                 0
             }
-        }).sum::<i64>()
-    }).sum::<i64>();
+        })
+        .sum();
 }
 
 #[cfg(test)]
