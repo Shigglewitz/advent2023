@@ -189,7 +189,8 @@ fn part2_with_input(input: &str) -> i64 {
                         }
                     } else {
                         Err(0)
-                    }.ok()
+                    }
+                    .ok()
                 })
                 .collect::<Vec<(i64, i64)>>()
         })

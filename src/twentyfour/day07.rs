@@ -5,31 +5,49 @@ use crate::create_advent_day;
 create_advent_day!("2024", "07");
 
 fn part1_with_input(input: &str) -> u64 {
-    let problems: Vec<Problem> = input.lines().map(|line| {
-        let mut colon = line.split(":");
-        let target = colon.next().unwrap().parse().unwrap();
-        let inputs = colon.next().unwrap().split_whitespace().map(|num| num.parse().unwrap()).collect();
-        Problem {
-            target,
-            inputs,
-        }
-    }).collect();
+    let problems: Vec<Problem> = input
+        .lines()
+        .map(|line| {
+            let mut colon = line.split(":");
+            let target = colon.next().unwrap().parse().unwrap();
+            let inputs = colon
+                .next()
+                .unwrap()
+                .split_whitespace()
+                .map(|num| num.parse().unwrap())
+                .collect();
+            Problem { target, inputs }
+        })
+        .collect();
 
-    return problems.par_iter().filter(|problem| problem.solveable()).map(|problem| problem.target).sum();
+    return problems
+        .par_iter()
+        .filter(|problem| problem.solveable())
+        .map(|problem| problem.target)
+        .sum();
 }
 
 fn part2_with_input(input: &str) -> u64 {
-    let problems: Vec<Problem> = input.lines().map(|line| {
-        let mut colon = line.split(":");
-        let target = colon.next().unwrap().parse().unwrap();
-        let inputs = colon.next().unwrap().split_whitespace().map(|num| num.parse().unwrap()).collect();
-        Problem {
-            target,
-            inputs,
-        }
-    }).collect();
+    let problems: Vec<Problem> = input
+        .lines()
+        .map(|line| {
+            let mut colon = line.split(":");
+            let target = colon.next().unwrap().parse().unwrap();
+            let inputs = colon
+                .next()
+                .unwrap()
+                .split_whitespace()
+                .map(|num| num.parse().unwrap())
+                .collect();
+            Problem { target, inputs }
+        })
+        .collect();
 
-    return problems.par_iter().filter(|problem| problem.solveable_pt2()).map(|problem| problem.target).sum();
+    return problems
+        .par_iter()
+        .filter(|problem| problem.solveable_pt2())
+        .map(|problem| problem.target)
+        .sum();
 }
 
 struct Problem {
@@ -39,7 +57,7 @@ struct Problem {
 
 impl Problem {
     fn solveable(&self) -> bool {
-        let max_attempts = 2_i32.pow((self.inputs.len() -1) as u32);
+        let max_attempts = 2_i32.pow((self.inputs.len() - 1) as u32);
         for attempt in 0..max_attempts {
             let mut this_attempt = attempt;
             let mut total = self.inputs[0];
@@ -59,14 +77,14 @@ impl Problem {
     }
 
     fn solveable_pt2(&self) -> bool {
-        let max_attempts = 3_i32.pow((self.inputs.len() -1) as u32);
+        let max_attempts = 3_i32.pow((self.inputs.len() - 1) as u32);
         for attempt in 0..max_attempts {
             let mut this_attempt = attempt;
             let mut total = self.inputs[0];
             for i in 1..self.inputs.len() {
                 if this_attempt % 3 == 0 {
                     total += self.inputs[i];
-                } else if this_attempt %3 == 1{
+                } else if this_attempt % 3 == 1 {
                     total *= self.inputs[i];
                 } else {
                     let num_digits = self.inputs[i].checked_ilog10().unwrap_or(0) + 1;
