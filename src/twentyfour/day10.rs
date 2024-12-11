@@ -1,5 +1,7 @@
 use std::collections::HashSet;
 
+use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator};
+
 use crate::create_advent_day;
 
 create_advent_day!("2024", "10");
@@ -14,7 +16,7 @@ fn part1_with_input(input: &str) -> i64 {
         height: input.lines().count(),
     };
     return trailheads
-        .iter()
+        .par_iter()
         .map(|trailhead| trailhead.score(&map))
         .sum();
 }
@@ -89,9 +91,8 @@ impl Trailhead {
     fn score(&self, map: &Map) -> i64 {
         return self
             .traverse(map, 0, self.x, self.y)
-            .iter()
-            .filter_map(|entry| *entry)
-            .collect::<HashSet<(usize, usize)>>()
+            .par_iter()
+            .collect::<HashSet<&(usize, usize)>>()
             .len() as i64;
     }
 
@@ -101,13 +102,13 @@ impl Trailhead {
         altitude: u32,
         x: usize,
         y: usize,
-    ) -> Vec<Option<(usize, usize)>> {
+    ) -> Vec<(usize, usize)> {
         if altitude == 9 {
-            return vec![Some((x, y))];
+            return vec![(x, y)];
         }
         return map
             .neighbors(x, y)
-            .into_iter()
+            .into_par_iter()
             .filter(|(x, y)| map.altitudes[*y][*x] == altitude + 1)
             .map(|(x, y)| self.traverse(map, altitude + 1, x, y))
             .flatten()
@@ -124,7 +125,7 @@ impl Trailhead {
         }
         return map
             .neighbors(x, y)
-            .into_iter()
+            .into_par_iter()
             .filter(|(x, y)| map.altitudes[*y][*x] == altitude + 1)
             .map(|(x, y)| self.count_trails(map, altitude + 1, x, y))
             .sum();
@@ -141,7 +142,7 @@ fn part2_with_input(input: &str) -> i64 {
         height: input.lines().count(),
     };
     return trailheads
-        .iter()
+        .par_iter()
         .map(|trailhead| trailhead.rating(&map))
         .sum();
 }
