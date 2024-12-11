@@ -50,22 +50,6 @@ fn part1_with_input(input: &str) -> i64 {
         disk.swap(i, j);
     }
 
-    // let s: String = disk
-    //     .iter()
-    //     .map(|block| {
-    //         if block.is_empty {
-    //             '.'
-    //         } else {
-    //             let file_id = block.file_id;
-    //             println!("parsing {file_id}");
-    //             char::from_digit(block.file_id as u32, 10).unwrap()
-    //         }
-    //     })
-    //     .collect();
-    // println!("**** output *****");
-    // println!("{input}");
-    // println!("{s}");
-
     let checksum: usize = disk
         .iter()
         .enumerate()

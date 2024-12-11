@@ -96,13 +96,7 @@ impl Trailhead {
             .len() as i64;
     }
 
-    fn traverse(
-        &self,
-        map: &Map,
-        altitude: u32,
-        x: usize,
-        y: usize,
-    ) -> Vec<(usize, usize)> {
+    fn traverse(&self, map: &Map, altitude: u32, x: usize, y: usize) -> Vec<(usize, usize)> {
         if altitude == 9 {
             return vec![(x, y)];
         }
