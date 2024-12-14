@@ -74,7 +74,7 @@ struct ClawMachine {
 
 impl ClawMachine {
     fn cheapest_solution(&self, press_limit: Option<u64>) -> Option<u64> {
-        println!("cheapest solutions");
+        // println!("cheapest solutions");
         let x_combinations = find_combinations(self.a_x, self.b_x, self.prize_x);
         return x_combinations
             .iter()
@@ -98,7 +98,7 @@ fn find_combinations(first: u64, second: u64, goal: u64) -> Vec<(u64, u64)> {
     };
     let mut results = Vec::new();
     let mut initial_diff = u64::MAX;
-    println!("starting");
+    // println!("starting");
     for i in (0..((goal / a) + 1)).rev() {
         if results.len() == 2 {
             break;
@@ -113,7 +113,7 @@ fn find_combinations(first: u64, second: u64, goal: u64) -> Vec<(u64, u64)> {
         if remainder == 0 {
             results.push((i, diff / b));
         }
-        println!("** {remainder}");
+        // println!("** {remainder}");
         if remainder == initial_diff && results.is_empty() {
             break;
         }
@@ -126,7 +126,7 @@ fn find_combinations(first: u64, second: u64, goal: u64) -> Vec<(u64, u64)> {
         let a_diff = results[0].0 - results[1].0;
         let b_diff = results[1].1 - results[0].1;
         let a_starting = results[1].0;
-        println!("starting at {a_starting} with diff {a_diff}");
+        // println!("starting at {a_starting} with diff {a_diff}");
         let mut a_current = results[1].0;
         let mut b_current = results[1].1;
         for _ in (0..(a_starting / a_diff)).rev() {
@@ -147,8 +147,8 @@ fn part2_with_input(input: &str) -> u64 {
     let lines = input.lines();
     let mut machines: Vec<ClawMachine> = Vec::new();
     parse_claw_machines(lines, &mut machines);
-    println!("done parsing machines");
-    let adjusted_machines: Vec<ClawMachine> = machines
+    // println!("done parsing machines");
+    let _adjusted_machines: Vec<ClawMachine> = machines
         .into_iter()
         .map(|mut machine| {
             machine.prize_x += 10000000000000;
@@ -156,11 +156,11 @@ fn part2_with_input(input: &str) -> u64 {
             machine
         })
         .collect();
-    println!("done adjusting machines");
-    let size = adjusted_machines.len();
-    println!("size {size}");
+    // println!("done adjusting machines");
+    // let size = adjusted_machines.len();
+    // println!("size {size}");
 
-    adjusted_machines[0].cheapest_solution(None);
+    // adjusted_machines[0].cheapest_solution(None);
     return 42;
 
     // return adjusted_machines

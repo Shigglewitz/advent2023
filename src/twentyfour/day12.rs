@@ -37,7 +37,7 @@ fn part1_with_input(input: &str) -> i64 {
                 next_region,
                 Region {
                     area: 0,
-                    crop: garden.plots[y][x].crop,
+                    _crop: garden.plots[y][x].crop,
                     perimeter: 0,
                 },
             );
@@ -129,7 +129,7 @@ struct Plot {
 }
 
 struct Region {
-    crop: char,
+    _crop: char,
     perimeter: usize,
     area: usize,
 }
