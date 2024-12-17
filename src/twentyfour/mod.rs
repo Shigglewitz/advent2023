@@ -18,6 +18,8 @@ pub mod day13;
 pub mod day14;
 pub mod day15;
 pub mod day16;
+pub mod day17;
+pub mod day18;
 
 pub fn add_twenty_four(map: &mut HashMap<String, AdventDay>) {
     map.insert("2024_01".to_owned(), day01::create("real.txt"));
@@ -36,4 +38,6 @@ pub fn add_twenty_four(map: &mut HashMap<String, AdventDay>) {
     map.insert("2024_14".to_owned(), day14::create("real.txt"));
     map.insert("2024_15".to_owned(), day15::create("real.txt"));
     map.insert("2024_16".to_owned(), day16::create("real.txt"));
+    map.insert("2024_17".to_owned(), day17::create("real.txt"));
+    map.insert("2024_18".to_owned(), day18::create("real.txt"));
 }
