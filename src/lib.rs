@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
+pub mod twenty;
 pub mod twentyfour;
 pub mod twentyone;
 pub mod twentythree;
 pub mod twentytwo;
-pub mod twenty;
 pub mod utils;
 
 pub struct AdventDay {
