@@ -6,7 +6,7 @@ fn main() {
     println!("Hello, world!");
 
     let args: Vec<String> = env::args().collect();
-    let pattern = if args.len() > 1 { &args[1] } else { "2024" };
+    let pattern = if args.len() > 1 { &args[1] } else { "2020" };
 
     let map = advent_day_map();
     let mut days = map
